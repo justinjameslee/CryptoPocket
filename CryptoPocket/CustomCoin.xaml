@@ -1,0 +1,72 @@
+﻿<UserControl x:Class="CryptoPocket.CustomCoin"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:dragablz="clr-namespace:Dragablz;assembly=Dragablz"
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+        xmlns:local="clr-namespace:CryptoPocket"
+        Height="100" Width="Auto"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="WhiteSmoke"
+        FontFamily="{DynamicResource MaterialDesignFont}">
+    <materialDesign:ColorZone materialDesign:ShadowAssist.ShadowDepth="Depth1" Margin="5">
+        <Grid Width="Auto" Height="90">
+            <Grid HorizontalAlignment="Left" Width="128">
+                <Button 
+            Background="Orange" BorderBrush="Orange"
+            Style="{StaticResource MaterialDesignFloatingActionButton}"
+            ToolTip="MaterialDesignFloatingActionButton" HorizontalAlignment="Left" Margin="15,0,20,0" Width="55" Height="55" FontSize="18"
+                    Content="ETH">
+                </Button>
+                <materialDesign:PackIcon Kind="TrendingDown" Height="40" Width="40" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,25,10,25"/>
+            </Grid>
+            <Grid Margin="54,0,392,0" VerticalAlignment="Center" HorizontalAlignment="Center">
+
+            </Grid>
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*"/>
+                    <RowDefinition Height="50*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="ETH/USD: $583.03" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" Margin="0,7,24,5"/>
+                <Separator Grid.Row="1" Style="{StaticResource MaterialDesignDarkSeparator}" Margin="0,0,0,50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="1" Text="ETH/BTC: 0.07791070" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" Margin="-6,17,6,6"></TextBlock>
+            </Grid>
+            <Grid HorizontalAlignment="Right">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40*"/>
+                    <RowDefinition Height="60*"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="ToggleCoinText" Text="Portfolio Value" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="25,12,0,8"></TextBlock>
+                <ToggleButton 
+                Style="{StaticResource MaterialDesignActionToggleButton}"
+                ToolTip="MaterialDesignActionLightToggleButton" HorizontalAlignment="Right" Margin="0,5,5,0" Width="28" Height="28" Click="CustomCoinToggle_Click">
+                    <ToggleButton.Content>
+                        <materialDesign:PackIcon
+                        Kind="AccountCardDetails" Width="15" Height="15" />
+                    </ToggleButton.Content>
+                    <materialDesign:ToggleButtonAssist.OnContent>
+                        <materialDesign:PackIcon
+                        Kind="ChartLineVariant" />
+                    </materialDesign:ToggleButtonAssist.OnContent>
+                </ToggleButton>
+                <!-- Portfolio Value-->
+                <TextBlock x:Name="PortfolioCoin" Opacity="0" Text="ETH: 0.52" Grid.Row="2" Margin="0,-10,0,20" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+                <TextBlock x:Name="PortfolioCoinV" Opacity="0" Text="$226.62 USD" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0" FontSize="16"></TextBlock>
+                <!-- Change in Value -->
+                <TextBlock x:Name="txt24Hours" Opacity="100" Text="24 Hours" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="25,4,73,34" RenderTransformOrigin="0.846,0.75"></TextBlock>
+                <TextBlock x:Name="txt7Days" Opacity="100" Text="7 Days" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="39,26,73,12"></TextBlock>
+                <materialDesign:PackIcon x:Name="Icon24Hours" Opacity="100" Grid.Row="1" Kind="TrendingDown" Height="16" Width="15" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="125,25,10,13" RenderTransformOrigin="0.313,1.097" />
+                <TextBlock x:Name="txt24HoursV" Opacity="100" Text="$20.62" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="82,4,30,34"></TextBlock>
+                <TextBlock x:Name="txt7DaysV" Opacity="100" Text="$2.12" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="89,26,30,12" RenderTransformOrigin="-0.551,0.959"></TextBlock>
+                <materialDesign:PackIcon x:Name="Icon7Days" Opacity="100" Grid.Row="1" Kind="TrendingUp" Height="16" Width="15" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="125,4,10,34" RenderTransformOrigin="0.313,1.097" />
+            </Grid>
+        </Grid>
+    </materialDesign:ColorZone>
+</UserControl>
