@@ -32,24 +32,14 @@ namespace CryptoPocket
         {
             if (Theme == false)
             {
-                this.Background = new SolidColorBrush(Colors.Gray);
-                mw.Background = new SolidColorBrush(Colors.Gray);
-                mw.ThemeChange01.Foreground = new SolidColorBrush(Colors.White);
-                mw.ThemeChange02.Foreground = new SolidColorBrush(Colors.White);
-                mw.ThemeChange03.Foreground = new SolidColorBrush(Colors.White);
-                mw.ThemeChange04.Foreground = new SolidColorBrush(Colors.White);
                 Application.Current.Resources["txtColor"] = new SolidColorBrush(Colors.White);
+                Application.Current.Resources["background"] = new SolidColorBrush(Colors.DimGray);
                 Theme = true;
             }
             else if (Theme == true)
             {
-                this.Background = new SolidColorBrush(Colors.WhiteSmoke);
-                mw.Background = new SolidColorBrush(Colors.WhiteSmoke);
-                mw.ThemeChange01.Foreground = new SolidColorBrush(Colors.Black);
-                mw.ThemeChange02.Foreground = new SolidColorBrush(Colors.Black);
-                mw.ThemeChange03.Foreground = new SolidColorBrush(Colors.White);
-                mw.ThemeChange04.Foreground = new SolidColorBrush(Colors.White);
                 Application.Current.Resources["txtColor"] = new SolidColorBrush(Colors.Black);
+                Application.Current.Resources["background"] = new SolidColorBrush(Colors.WhiteSmoke);
                 Theme = false;
             }
         }
