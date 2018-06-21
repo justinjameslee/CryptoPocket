@@ -43,5 +43,15 @@ namespace CryptoPocket
                 Theme = false;
             }
         }
+
+        private void btnSaveWallet_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnRemoveWallet_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
