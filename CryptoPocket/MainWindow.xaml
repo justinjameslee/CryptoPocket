@@ -21,7 +21,7 @@
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="Auto"
         Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="{DynamicResource MaterialDesignFont}" WindowStyle="None" ResizeMode="NoResize" Loaded="CryptoPocket_Loaded" BorderBrush="#FFAB00" BorderThickness="2">
+        FontFamily="{DynamicResource MaterialDesignFont}" WindowStyle="None" ResizeMode="NoResize" Loaded="CryptoPocket_Loaded" BorderBrush="#FFAB00" BorderThickness="2" Deactivated="Window_Deactivated" Topmost="False">
 
     <Window.Resources>
         <SolidColorBrush x:Key="StandardBorderBrush" Color="#888" />

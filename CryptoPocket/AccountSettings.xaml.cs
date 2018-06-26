@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace CryptoPocket
 {
@@ -24,9 +25,13 @@ namespace CryptoPocket
         {
             InitializeComponent();
         }
+        
+        public static string BaseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
         MainWindow mw = (MainWindow)Application.Current.MainWindow;
         public bool Theme = false;
+        public bool OnTop = false;
+        public bool BootUp = false;
 
         private void ThemeChecked(object sender, RoutedEventArgs e)
         {
@@ -52,6 +57,40 @@ namespace CryptoPocket
         private void btnRemoveWallet_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void OnTopChecked(object sender, RoutedEventArgs e)
+        {
+            if (OnTop == false)
+            {
+                mw.Topmost = true;
+                OnTop = true;
+            }
+            else if (OnTop == true)
+            {
+                mw.Topmost = false;
+                OnTop = false;
+            }
+        }
+
+        private void BootChecked(object sender, RoutedEventArgs e)
+        {
+            if (BootUp == false)
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+                {
+                    key.SetValue("CryptoPocket", BaseDir);
+                }
+                BootUp = true;
+            }
+            else if (BootUp == true)
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+                {
+                    key.DeleteValue("My ApplicationStartUpDemo", false);
+                }
+                BootUp = false;
+            }
         }
     }
 }
