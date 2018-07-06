@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Win32;
+using System.IO;
 
 namespace CryptoPocket
 {
@@ -27,6 +28,7 @@ namespace CryptoPocket
         }
         
         public static string BaseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        string FileLocation = System.IO.Path.Combine(BaseDir, "CryptoPocket.exe");
 
         MainWindow mw = (MainWindow)Application.Current.MainWindow;
         public bool Theme = false;
@@ -38,12 +40,16 @@ namespace CryptoPocket
             if (Theme == false)
             {
                 Application.Current.Resources["txtColor"] = new SolidColorBrush(Colors.White);
+                Application.Current.Resources["txtBlack"] = new SolidColorBrush(Colors.Black);
+                Application.Current.Resources["bgColor"] = new SolidColorBrush(Colors.Gray);
                 Application.Current.Resources["background"] = new SolidColorBrush(Colors.DimGray);
                 Theme = true;
             }
             else if (Theme == true)
             {
                 Application.Current.Resources["txtColor"] = new SolidColorBrush(Colors.Black);
+                Application.Current.Resources["txtBlack"] = new SolidColorBrush(Colors.Black);
+                Application.Current.Resources["bgColor"] = new SolidColorBrush(Colors.White);
                 Application.Current.Resources["background"] = new SolidColorBrush(Colors.WhiteSmoke);
                 Theme = false;
             }
@@ -79,7 +85,7 @@ namespace CryptoPocket
             {
                 using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
                 {
-                    key.SetValue("CryptoPocket", BaseDir);
+                    key.SetValue("CryptoPocket", FileLocation);
                 }
                 BootUp = true;
             }
@@ -87,7 +93,7 @@ namespace CryptoPocket
             {
                 using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
                 {
-                    key.DeleteValue("My ApplicationStartUpDemo", false);
+                    key.DeleteValue("CryptoPocket", false);
                 }
                 BootUp = false;
             }

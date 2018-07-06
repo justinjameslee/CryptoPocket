@@ -54,6 +54,7 @@ namespace CryptoPocket
             HeaderTabs.SelectedIndex = 0;
 
             string connectionstring = "SERVER=db4free.net;DATABASE=cryptopocket;UID=usercrypto;PWD=passCrypto123;";
+            string connectionstring2 = "SERVER=db4free.net;DATABASE=cryptopocket;UID=usercrypto;PWD=passCrypto123;";
 
             string DatabaseConnectionString = Properties.Settings.Default.ConnectionString;
             connection = new MySqlConnection(connectionstring);
@@ -80,90 +81,90 @@ namespace CryptoPocket
             }
         }
 
-        //private bool OpenConnection()
-        //{
-        //    try
-        //    {
-        //      //connection.Open();
-        //        return true;
-        //    }
-        //    catch (MySqlException ex)
-        //    {
-        //        //When handling errors, you can your application's response based 
-        //        //on the error number.
-        //        //The two most common error numbers when connecting are as follows:
-        //        //0: Cannot connect to server.
-        //        //1045: Invalid user name and/or password.
-        //        switch (ex.Number)
-        //        {
-        //            case 0:
-        //                Console.WriteLine("Cannot connect to server.  Contact administrator");
-        //                break;
+        private bool OpenConnection()
+        {
+            try
+            {
+                connection.Open();
+                return true;
+            }
+            catch (MySqlException ex)
+            {
+                //When handling errors, you can your application's response based 
+                //on the error number.
+                //The two most common error numbers when connecting are as follows:
+                //0: Cannot connect to server.
+                //1045: Invalid user name and/or password.
+                switch (ex.Number)
+                {
+                    case 0:
+                        Console.WriteLine("Cannot connect to server.  Contact administrator");
+                        break;
 
-        //            case 1045:
-        //                Console.WriteLine("Invalid username/password, please try again");
-        //                break;
+                    case 1045:
+                        Console.WriteLine("Invalid username/password, please try again");
+                        break;
 
-        //            case 1130:
-        //                Console.WriteLine("Not allowed to connected to server.");
-        //                break;
-        //        }
-        //        return false;
-        //    }
-        //}
+                    case 1130:
+                        Console.WriteLine("Not allowed to connected to server.");
+                        break;
+                }
+                return false;
+            }
+        }
 
-        ////Close connection
-        //private bool CloseConnection()
-        //{
-        //    try
-        //    {
-        //        connection.Close();
-        //        return true;
-        //    }
-        //    catch (MySqlException ex)
-        //    {
-        //        Console.WriteLine(ex.Message);
-        //        return false;
-        //    }
-        //}
+        //Close connection
+        private bool CloseConnection()
+        {
+            try
+            {
+                connection.Close();
+                return true;
+            }
+            catch (MySqlException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
 
-        ////Select statement
-        //public List<string> Select(List<string> Ref)
-        //{
-        //    string query = "SELECT * FROM CryptoCustomCoins";
+        //Select statement
+        public List<string> Select(List<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoCustomCoins";
 
-        //    MySQLReference.CCID.Clear();
-        //    MySQLReference.CCoin.Clear();
+            MySQLReference.CCID.Clear();
+            MySQLReference.CCoin.Clear();
 
-        //    //Open connection
-        //    if (OpenConnection() == true)
-        //    {
-        //        //Create Command
-        //        MySqlCommand cmd = new MySqlCommand(query, connection);
-        //        //Create a data reader and Execute the command
-        //        MySqlDataReader dataReader = cmd.ExecuteReader();
+            //Open connection
+            if (OpenConnection() == true)
+            {
+                //Create Command
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                //Create a data reader and Execute the command
+                MySqlDataReader dataReader = cmd.ExecuteReader();
 
-        //        //Read the data and store them in the list
-        //        while (dataReader.Read())
-        //        {
-        //            MySQLReference.CCID.Add(dataReader["ID"] + "");
-        //            MySQLReference.CCoin.Add(dataReader["COIN"] + "");
-        //        }
+                //Read the data and store them in the list
+                while (dataReader.Read())
+                {
+                    MySQLReference.CCID.Add(dataReader["ID"] + "");
+                    MySQLReference.CCoin.Add(dataReader["COIN"] + "");
+                }
 
-        //        //close Data Reader
-        //        dataReader.Close();
+                //close Data Reader
+                dataReader.Close();
 
-        //        //close Connection
-        //        CloseConnection();
+                //close Connection
+                CloseConnection();
 
-        //        //return list to be displayed
-        //        return Ref;
-        //    }
-        //    else
-        //    {
-        //        return Ref;
-        //    }
-        //}
+                //return list to be displayed
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
 
         public Func<ChartPoint, string> PointLabel { get; set; }
 
@@ -220,6 +221,7 @@ namespace CryptoPocket
         private void Header_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             AccountSettings.Visibility = Visibility.Hidden;
+            OpenConnection();
         }
 
         
