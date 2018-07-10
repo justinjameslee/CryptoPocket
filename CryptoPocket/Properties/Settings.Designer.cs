@@ -26,7 +26,7 @@ namespace CryptoPocket.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
-        [global::System.Configuration.DefaultSettingValueAttribute("SERVER=27.121.64.163;UID=acac1887_user;PWD=testuser123;")]
+        [global::System.Configuration.DefaultSettingValueAttribute("SERVER=db4free.net;DATABASE=cryptopocket;UID=usercrypto;PWD=passCrypto123;")]
         public string ConnectionString {
             get {
                 return ((string)(this["ConnectionString"]));

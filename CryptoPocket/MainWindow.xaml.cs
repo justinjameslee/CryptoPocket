@@ -18,6 +18,10 @@ using Newtonsoft;
 using Newtonsoft.Json;
 using MySql.Data.MySqlClient;
 using System.Windows.Media.Animation;
+using System.IO;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
+using System.Windows.Threading;
 
 namespace CryptoPocket
 {
@@ -43,6 +47,12 @@ namespace CryptoPocket
         bool WorkerToggled = false;
         public bool AlwaysOnTop = false;
 
+        public static bool LoggedIn = false;
+        public static bool DefaultLogin = true;
+        public static string PreviousUsername;
+
+        public static int CurrentID;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -53,11 +63,11 @@ namespace CryptoPocket
             DataContext = this;
             HeaderTabs.SelectedIndex = 0;
 
-            string connectionstring = "SERVER=db4free.net;DATABASE=cryptopocket;UID=usercrypto;PWD=passCrypto123;";
-            string connectionstring2 = "SERVER=db4free.net;DATABASE=cryptopocket;UID=usercrypto;PWD=passCrypto123;";
+            //string connectionstring2 = "SERVER=27.121.66.21;DATABASE=goldli00_CryptoPocket;UID=goldli00_admin;PWD=passCrypto123;";
 
             string DatabaseConnectionString = Properties.Settings.Default.ConnectionString;
-            connection = new MySqlConnection(connectionstring);
+            connection = new MySqlConnection(DatabaseConnectionString);
+            
         }
 
         public ICommand ToggleBaseCommand { get; } = new AnotherCommandImplementation(o => ApplyBase((bool)o));
@@ -221,15 +231,36 @@ namespace CryptoPocket
         private void Header_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             AccountSettings.Visibility = Visibility.Hidden;
-            OpenConnection();
         }
 
         
 
         private void CryptoPocket_Loaded(object sender, RoutedEventArgs e)
         {
-           // List<string> Test = Select(MySQLReference.CCID);
-            //Console.WriteLine(Test.IndexOf("1"));
+            CreateMustFiles();
+            if (new FileInfo(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt").Length == 0)
+            {
+                DefaultLogin = true;
+            }
+            else
+            {
+                PreviousUsername = File.ReadAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt");
+                DefaultLogin = false;
+
+                DispatcherTimer dispatcherTimer = new DispatcherTimer();
+                dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+                dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
+                dispatcherTimer.Start();
+            }
+
+        }
+
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            ButtonAutomationPeer peer = new ButtonAutomationPeer(AccountSettings.LoginEditButton);
+            IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+            invokeProv.Invoke();
+            (sender as DispatcherTimer).Stop();
         }
 
         private void CustomCoinToggle_Click(object sender, RoutedEventArgs e)
@@ -433,6 +464,10 @@ namespace CryptoPocket
 
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
+            if (LoggedIn == true)
+            {
+                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", HeaderUser.Text);
+            }
             Environment.Exit(1);
         }
 
@@ -444,6 +479,18 @@ namespace CryptoPocket
         private void Window_Deactivated(object sender, EventArgs e)
         {
 
+        }
+
+        //Checking and Creating Required Files
+        public static void CreateMustFiles()
+        {
+            if (!File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Users\Usernames.txt") || !File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt"))
+            {
+                Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Users");
+                Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session");
+                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Users\Usernames.txt", "");
+                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", "");
+            }
         }
     }
 }
