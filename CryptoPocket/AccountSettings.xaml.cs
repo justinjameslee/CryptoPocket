@@ -318,28 +318,21 @@ namespace CryptoPocket
 
         private void btnSignup_Click(object sender, RoutedEventArgs e)
         {
-            SolidColorBrush CaretDefault = new SolidColorBrush(CaretColor);
-            SolidColorBrush BorderDefault = new SolidColorBrush(BorderColor);
+            
 
             SignupClicked = true;
 
             if (IsValidEmail(txtSignupEmail.Text) == false || txtSignupUsername.Text == "" || txtSignupPassword.Password.Length <= 8 || txtSignupUsername.Text.Length > 20)
             {
-                txtSignupEmail.BorderBrush = BrushRed;
-                txtSignupEmail.CaretBrush = BrushRed;
-                txtSignupUsername.BorderBrush = BrushRed;
-                txtSignupUsername.CaretBrush = BrushRed;
-                txtSignupPassword.BorderBrush = BrushRed;
-                txtSignupPassword.CaretBrush = BrushRed;
+                IncorrectInputTextBox(txtSignupEmail);
+                IncorrectInputTextBox(txtSignupUsername);
+                IncorrectInputPassword(txtSignupPassword);
             }
             else
             {
-                txtSignupEmail.BorderBrush = BorderDefault;
-                txtSignupEmail.CaretBrush = CaretDefault;
-                txtSignupUsername.BorderBrush = BorderDefault;
-                txtSignupUsername.CaretBrush = CaretDefault;
-                txtSignupPassword.BorderBrush = BorderDefault;
-                txtSignupPassword.CaretBrush = CaretDefault;
+                ResetInputTextBox(txtSignupEmail);
+                ResetInputTextBox(txtSignupUsername);
+                ResetInputPassword(txtSignupPassword);
                 salt = CreateSalt(10);
                 hashedpassword = GenerateSHA256Hash(txtSignupPassword.Password, salt);
                 EmailUp = txtSignupEmail.Text;
@@ -368,6 +361,38 @@ namespace CryptoPocket
                 }
             }
         }
+
+        void IncorrectInputTextBox(TextBox x)
+        {
+            x.BorderBrush = BrushRed;
+            x.CaretBrush = BrushRed;
+
+        }
+
+        void IncorrectInputPassword(PasswordBox x)
+        {
+            x.BorderBrush = BrushRed;
+            x.CaretBrush = BrushRed;
+        }
+
+        void ResetInputTextBox(TextBox x)
+        {
+            SolidColorBrush CaretDefault = new SolidColorBrush(CaretColor);
+            SolidColorBrush BorderDefault = new SolidColorBrush(BorderColor);
+
+            x.BorderBrush = BorderDefault;
+            x.CaretBrush = CaretDefault;
+        }
+
+        void ResetInputPassword(PasswordBox x)
+        {
+            SolidColorBrush CaretDefault = new SolidColorBrush(CaretColor);
+            SolidColorBrush BorderDefault = new SolidColorBrush(BorderColor);
+
+            x.BorderBrush = BorderDefault;
+            x.CaretBrush = CaretDefault;
+        }
+
         private void DialogHost_OnDialogClosing(object sender, DialogClosingEventArgs eventArgs)
         {
             if (SignupClicked == true && Signup == true)
@@ -421,6 +446,78 @@ namespace CryptoPocket
             {
                 EditUserUsername.Text = "Current: Guest";
             }
+        }
+
+        private void btnLogin_Click(object sender, RoutedEventArgs e)
+        {
+            SolidColorBrush CaretDefault = new SolidColorBrush(CaretColor);
+            SolidColorBrush BorderDefault = new SolidColorBrush(BorderColor);
+
+            if (LoginUsername.Text.Length > 20 && LoginPassword.Password.Length <= 8)
+            {
+                IncorrectInputTextBox(LoginUsername);
+                IncorrectInputPassword(LoginPassword);
+            }
+            else if (LoginPassword.Password.Length <= 8)
+            {
+                ResetInputTextBox(LoginUsername);
+                IncorrectInputPassword(LoginPassword);
+            }
+            else if (LoginUsername.Text.Length > 20)
+            {
+                IncorrectInputTextBox(LoginUsername);
+                ResetInputPassword(LoginPassword);
+            }
+            else
+            {
+                try
+                {
+                    int Index = Select(USERNAME).IndexOf(LoginUsername.Text);
+                    hashedpassword = Select(HASH)[Index];
+                    salt = Select(SALT)[Index];
+
+                    if (hashedpassword == GenerateSHA256Hash(LoginPassword.Password, salt))
+                    {
+                        MainWindow.LoggedIn = true;
+
+                        SettingsEmail.Text = "Email: " + Select(EMAIL)[Index];
+                        SettingsUsername.Text = LoginUsername.Text;
+                        mw.HeaderUser.Text = LoginUsername.Text;
+
+                        MainWindow.CurrentID = Select(EMAIL).IndexOf(Select(EMAIL)[Index]) + 1;
+
+                        SelectMember(MEMBERSHIP);
+                        SettingsMembership.Text = "Membership: " + MEMBERSHIP.ElementAt(MainWindow.CurrentID - 1);
+                    }
+                    else
+                    {
+                        IncorrectInputTextBox(LoginUsername);
+                        IncorrectInputPassword(LoginPassword);
+                    }
+                }
+                catch (Exception)
+                {
+                    IncorrectInputTextBox(LoginUsername);
+                    IncorrectInputPassword(LoginPassword);
+                }
+            }
+        }
+
+        private void btnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            LogoutUser.Text = "User: " + mw.HeaderUser.Text;
+        }
+
+        private void btnConfirmLogout_Click(object sender, RoutedEventArgs e)
+        {
+            mw.HeaderUser.Text = "Guest";
+            SettingsUsername.Text = "Guest";
+            SettingsEmail.Text = "Email: N/A";
+            SettingsMembership.Text = "Membership: Free";
+            SettingsDevices.Text = "Connected Devices: N/A";
+            SettingsAccount.Text = "Account Balance: M/A";
+            MainWindow.CurrentID = -1;
+            MainWindow.LoggedIn = false;
         }
     }
 }

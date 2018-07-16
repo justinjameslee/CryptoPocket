@@ -228,3 +228,5 @@ C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\SignupC
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\SignupComplete.baml
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\UIAutomationProvider.dll
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\UIAutomationProvider.dll
+C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\WPFTextBoxAutoComplete.dll
+C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\WPFTextBoxAutoComplete.pdb

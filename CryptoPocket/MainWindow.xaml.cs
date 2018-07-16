@@ -468,6 +468,10 @@ namespace CryptoPocket
             {
                 File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", HeaderUser.Text);
             }
+            else
+            {
+                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", "");
+            }
             Environment.Exit(1);
         }
 
@@ -484,11 +488,9 @@ namespace CryptoPocket
         //Checking and Creating Required Files
         public static void CreateMustFiles()
         {
-            if (!File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Users\Usernames.txt") || !File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt"))
+            if (!File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt"))
             {
-                Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Users");
                 Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session");
-                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Users\Usernames.txt", "");
                 File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", "");
             }
         }
