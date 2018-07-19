@@ -51,7 +51,10 @@ namespace CryptoPocket
         public static bool DefaultLogin = true;
         public static string PreviousUsername;
 
-        public static int CurrentID;
+        public static int CurrentID = 0;
+
+        Color HoverColour = (Color)ColorConverter.ConvertFromString("#FFFFCC33");
+        Color UnhoverColour = (Color)ColorConverter.ConvertFromString("#FFFEC007");
 
         public MainWindow()
         {
@@ -493,6 +496,20 @@ namespace CryptoPocket
                 Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session");
                 File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", "");
             }
+        }
+
+        private void HeaderMouseEnter(object sender, MouseEventArgs e)
+        {
+            SolidColorBrush BrushHover = new SolidColorBrush(HoverColour);
+            Button X = (Button)sender;
+            X.Background = BrushHover;
+        }
+
+        private void HeaderMouseLeave(object sender, MouseEventArgs e)
+        {
+            SolidColorBrush BrushUnhover = new SolidColorBrush(UnhoverColour);
+            Button X = (Button)sender;
+            X.Background = BrushUnhover;
         }
     }
 }

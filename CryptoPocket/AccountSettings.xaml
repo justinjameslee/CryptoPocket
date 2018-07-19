@@ -14,7 +14,8 @@
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="Auto"
         Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="{DynamicResource MaterialDesignFont}" Loaded="AccountSettings_Loaded">
+        FontFamily="{DynamicResource MaterialDesignFont}" Loaded="AccountSettings_Loaded"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Grid>
         <materialDesign:Card Width="400" Height="155" Margin="10,10,10,10" HorizontalAlignment="Left" Padding="15">
             <Grid>
@@ -277,23 +278,21 @@
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="185,40,0,10" HorizontalAlignment="Left">
                                     <ComboBox
+                                        x:Name="ComboBoxIDs"
                                         materialDesign:HintAssist.Hint="Saved Addresses"
                                         MinWidth="220"
                                         Margin="5,0,0,0"
-                                        ItemsSource="{Binding LongListToTestComboVirtualization}"
+                                        ItemsSource="{Binding Path=WalletCustomIDs}"
+                                        Text="{Binding SelectedTextTwo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                                         IsEditable="True">
-                                        <ComboBox.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <VirtualizingStackPanel />
-                                            </ItemsPanelTemplate>
-                                        </ComboBox.ItemsPanel>
                                     </ComboBox>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Width="80" Height="50">
                                     <Button 
 										Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
 										CommandTarget="{Binding ElementName=SaveWallet}" 
+                                        materialDesign:DialogHost.DialogClosingAttached="DialogHost_OnDialogClosing"
 										Background="#379824" BorderBrush="#379824"
 										Style="{StaticResource MaterialDesignFloatingActionButton}"
 										ToolTip="MaterialDesignFloatingActionButton" HorizontalAlignment="Left" Margin="0,15,0,0"
@@ -304,11 +303,13 @@
                                                 <TextBlock Text="Save Wallet ID" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="16,0,16,6"/>
                                                 <StackPanel Orientation="Vertical" Width="250">
                                                     <TextBox
+                                                        x:Name="CustomID"
                                                         Margin="6,6,6,6" Width="Auto"
 													    materialDesign:HintAssist.Hint="Wallet ID"
                                                         Text="Custom ID"
 													    Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
                                                     <TextBox
+                                                        x:Name="WalletAddress"
 														Margin="6,6,6,6" Width="Auto"
 														materialDesign:HintAssist.Hint="Wallet Address"
                                                         Text="25865daf640696361b432bd517b812270d8459af48f13876108354ee7e028e0e15c13ab5030c"
@@ -338,7 +339,8 @@
                                     </Button>
                                     <Button 
                                     	Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
-                                    	CommandTarget="{Binding ElementName=RemoeWallet}"
+                                    	CommandTarget="{Binding ElementName=RemoveWallet}"
+                                        materialDesign:DialogHost.DialogClosingAttached="DialogHost_OnDialogClosing"
                                     	Background="#CC2D29" BorderBrush="#CC2D29"
                                     	Style="{StaticResource MaterialDesignFloatingActionButton}"
                                     	ToolTip="MaterialDesignFloatingActionButton" HorizontalAlignment="Right" Margin="15,15,0,0"
@@ -353,8 +355,9 @@
                                                 <StackPanel Orientation="Vertical" Width="250">
                                                     <ComboBox
                                     					Margin="6,6,6,6" Width="Auto"
-                                    					x:Name= "TradRemoveComboBox"
+                                    					x:Name= "RemoveComboBoxIDs"
                                     					materialDesign:HintAssist.Hint="Wallet ID"
+                                                        ItemsSource="{Binding Path=WalletCustomIDs}"
                                     					MinWidth="72" Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                                     					VerticalAlignment="Bottom" IsEditable="True" Text="{Binding SelectedTextTwo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                                         <ComboBox.ItemsPanel>

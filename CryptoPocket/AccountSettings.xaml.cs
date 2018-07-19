@@ -17,6 +17,7 @@ using System.IO;
 using MySql.Data.MySqlClient;
 using System.Windows.Media.Animation;
 using MaterialDesignThemes.Wpf;
+using System.Collections.ObjectModel;
 
 namespace CryptoPocket
 {
@@ -30,6 +31,7 @@ namespace CryptoPocket
             InitializeComponent();
             string DatabaseConnectionString = Properties.Settings.Default.ConnectionString;
             connection = new MySqlConnection(DatabaseConnectionString);
+            WalletCustomIDs = new ObservableCollection<string>();
         }
         
         public static string BaseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -47,6 +49,8 @@ namespace CryptoPocket
         public static string UserUp;
         public static string EmailUp;
         public static string FreeMembership = "Free";
+        public static string SaveCustomID;
+        public static string SaveWalletAddress;
         //Create a list to store the result
         public List<string> EMAIL = new List<string>();
         public List<string> USERNAME = new List<string>();
@@ -54,14 +58,20 @@ namespace CryptoPocket
         public List<string> SALT = new List<string>();
         public List<string> ID_M = new List<string>();
         public List<string> MEMBERSHIP = new List<string>();
+        public List<string> ID_MS = new List<string>();
+        public List<string> CUSTOMID = new List<string>();
+        public List<string> WALLET = new List<string>();
 
         public bool Signup = false;
         public bool SignupClicked = false;
         public bool CancelSingup = false;
+        public bool SaveWallet = false;
 
         SolidColorBrush BrushRed = new SolidColorBrush(Colors.Red);
         Color CaretColor = (Color)ColorConverter.ConvertFromString("#FFFFC107");
         Color BorderColor = (Color)ColorConverter.ConvertFromString("#89000000");
+
+        public ObservableCollection<string> WalletCustomIDs { get; set; }
 
         public string CreateSalt(int size)
         {
@@ -142,6 +152,39 @@ namespace CryptoPocket
             }
             SelectMember(MEMBERSHIP);
             SettingsMembership.Text = "Membership: " + MEMBERSHIP.ElementAt(MainWindow.CurrentID - 1);
+        }
+
+        public void InsertMiningSettings()
+        {
+            string query = "INSERT INTO CryptoMiningSettings (ID, CUSTOMID, WALLET) VALUES('" + Convert.ToString(MainWindow.CurrentID) + "', '" + SaveCustomID + "', '" + SaveWalletAddress + "')";
+
+            if (this.OpenConnection() == true)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.ExecuteNonQuery();
+                    this.CloseConnection();
+                    WalletCustomIDs.Add(SaveCustomID);
+                    ComboBoxIDs.ItemsSource = WalletCustomIDs;
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Duplicate Custom ID Entry");
+                }
+            }
+        }
+
+        public void DeleteMiningSettings()
+        {
+            string query = "DELETE FROM CryptoMiningSettings WHERE ID='" + Convert.ToString(MainWindow.CurrentID) + "'AND CUSTOMID='" + RemoveComboBoxIDs.Text + "'";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
         }
 
         //open connection to database
@@ -252,6 +295,37 @@ namespace CryptoPocket
             }
         }
 
+
+        public List<string> SelectMiningSettings(List<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoMiningSettings";
+
+            ID_MS.Clear();
+            CUSTOMID.Clear();
+            WALLET.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    ID_MS.Add(dataReader["ID"] + "");
+                    CUSTOMID.Add(dataReader["CUSTOMID"] + "");
+                    WALLET.Add(dataReader["WALLET"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+
         private void ThemeChecked(object sender, RoutedEventArgs e)
         {
             if (Theme == false)
@@ -274,12 +348,41 @@ namespace CryptoPocket
 
         private void btnSaveWallet_Click(object sender, RoutedEventArgs e)
         {
-
+            if (CustomID.Text.Length == 0 || WalletAddress.Text.Length == 0)
+            {
+                IncorrectInputTextBox(CustomID);
+                IncorrectInputTextBox(WalletAddress);
+            }
+            else if (MainWindow.LoggedIn == false)
+            {
+                MessageBox.Show("Guest user cannot save data!");
+            }
+            else
+            {
+                ResetInputTextBox(CustomID);
+                ResetInputTextBox(WalletAddress);
+                if (WalletCustomIDs.Contains(CustomID.Text))
+                {
+                    
+                }
+                else
+                {
+                    SaveWallet = true;
+                    SaveCustomID = CustomID.Text;
+                    SaveWalletAddress = WalletAddress.Text;
+                }
+            }
+                
         }
 
         private void btnRemoveWallet_Click(object sender, RoutedEventArgs e)
         {
-
+            if (RemoveComboBoxIDs.Text.Length != 0)
+            {
+                DeleteMiningSettings();
+                WalletCustomIDs.Remove(RemoveComboBoxIDs.Text);
+                ComboBoxIDs.ItemsSource = WalletCustomIDs;
+            }
         }
 
         private void OnTopChecked(object sender, RoutedEventArgs e)
@@ -420,6 +523,11 @@ namespace CryptoPocket
                 eventArgs.Cancel();
                 SignupClicked = false;
             }
+            else if (SaveWallet == true)
+            {
+                SaveWallet = false;
+                InsertMiningSettings();
+            }
             else
             {
 
@@ -516,8 +624,10 @@ namespace CryptoPocket
             SettingsMembership.Text = "Membership: Free";
             SettingsDevices.Text = "Connected Devices: N/A";
             SettingsAccount.Text = "Account Balance: M/A";
-            MainWindow.CurrentID = -1;
+            MainWindow.CurrentID = 0;
             MainWindow.LoggedIn = false;
+            WalletCustomIDs.Clear();
+            ComboBoxIDs.ItemsSource = null;
         }
     }
 }
