@@ -484,7 +484,7 @@
 																			Background="Orange" BorderBrush="Orange"
 																			Style="{StaticResource MaterialDesignFloatingActionButton}"
 																			ToolTip="MaterialDesignFloatingActionButton" HorizontalAlignment="Left" Margin="15,0,20,0" Width="55" Height="55" FontSize="18"
-																			Content="ETH"/>
+																			Content="{Binding CustomCoinName}"/>
                                                                         <materialDesign:PackIcon Kind="TrendingDown" Height="40" Width="40" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,25,10,25"/>
                                                                     </Grid>
                                                                     <Grid Margin="54,0,392,0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
@@ -493,9 +493,9 @@
                                                                             <RowDefinition Height="50*"/>
                                                                             <RowDefinition Height="50*"/>
                                                                         </Grid.RowDefinitions>
-                                                                        <TextBlock Grid.Row="0" Text="ETH/USD: $583.03" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" Margin="0,7,24,5"/>
+                                                                        <TextBlock Grid.Row="0" Text="{Binding ValueUSD}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" Margin="0,7,24,5"/>
                                                                         <Separator Grid.Row="1" Style="{StaticResource MaterialDesignDarkSeparator}" Margin="0,0,0,50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                                        <TextBlock Grid.Row="1" Text="ETH/BTC: 0.07791070" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" Margin="-6,17,6,6"/>
+                                                                        <TextBlock Grid.Row="1" Text="{Binding ValueBTC}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" Margin="-6,17,6,6"/>
                                                                     </Grid>
                                                                     <Grid HorizontalAlignment="Right">
                                                                         <Grid.RowDefinitions>
@@ -514,14 +514,14 @@
 																				Kind="AccountCardDetails" Width="15" Height="15" />
                                                                         </ToggleButton>
                                                                         <!-- Portfolio Value-->
-                                                                        <TextBlock x:Name="PortfolioCoin" Opacity="100" Text="ETH: 0.52" Grid.Row="2" Margin="0,-10,0,20" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
-                                                                        <TextBlock x:Name="PortfolioCoinV" Opacity="100" Text="$226.62 USD" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0" FontSize="16"/>
+                                                                        <TextBlock x:Name="PortfolioCoin" Opacity="100" Text="{Binding PortfolioQuan}" Grid.Row="2" Margin="0,-10,0,20" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+                                                                        <TextBlock x:Name="PortfolioCoinV" Opacity="100" Text="{Binding PortfolioValue}" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0" FontSize="16"/>
                                                                         <!-- Change in Value -->
                                                                         <TextBlock x:Name="txt24Hours" Opacity="0" Text="24 Hours" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="25,4,73,34" RenderTransformOrigin="0.846,0.75"/>
                                                                         <TextBlock x:Name="txt7Days" Opacity="0" Text="7 Days" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="39,26,73,12"/>
                                                                         <materialDesign:PackIcon x:Name="Icon24Hours" Opacity="0" Grid.Row="1" Kind="TrendingDown" Height="16" Width="15" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="125,25,10,13" RenderTransformOrigin="0.313,1.097" />
-                                                                        <TextBlock x:Name="txt24HoursV" Opacity="0" Text="$20.62" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="82,4,30,34"/>
-                                                                        <TextBlock x:Name="txt7DaysV" Opacity="0" Text="$2.12" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="89,26,30,12" RenderTransformOrigin="-0.551,0.959"/>
+                                                                        <TextBlock x:Name="txt24HoursV" Opacity="0" Text="{Binding Change24Hour}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="82,4,30,34"/>
+                                                                        <TextBlock x:Name="txt7DaysV" Opacity="0" Text="{Binding Change7Day}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="89,26,30,12" RenderTransformOrigin="-0.551,0.959"/>
                                                                         <materialDesign:PackIcon x:Name="Icon7Days" Opacity="0" Grid.Row="1" Kind="TrendingUp" Height="16" Width="15" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="125,4,10,34" RenderTransformOrigin="0.313,1.097" />
                                                                     </Grid>
                                                                 </Grid>

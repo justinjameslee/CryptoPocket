@@ -63,7 +63,7 @@
                                     <Button
 										Style="{StaticResource MaterialDesignFlatButton}"
 										IsCancel="True"
-										Command="materialDesign:DialogHost.CloseDialogCommand" HorizontalAlignment="Right" Margin="0,6,6,0" Content="CANCEL">
+										Command="materialDesign:DialogHost.CloseDialogCommand" HorizontalAlignment="Right" Margin="0,6,6,0" Content="CANCEL" Click="btnCancel_Click">
                                         <Button.CommandParameter>
                                             <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">False</system:Boolean>
                                         </Button.CommandParameter>
@@ -247,8 +247,9 @@
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="5,40,0,10" HorizontalAlignment="Left">
                                     <TextBox
+                                        x:Name="txtElectricityRate"
                                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                        Text="0.1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,5,0,0">
+                                        Text="0.1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,5,0,0" LostFocus="btnElectricityRate_LostFocus" MaxLength="4">
                                         <materialDesign:HintAssist.Hint>
                                             <StackPanel
                                                 Orientation="Horizontal"
@@ -306,13 +307,11 @@
                                                         x:Name="CustomID"
                                                         Margin="6,6,6,6" Width="Auto"
 													    materialDesign:HintAssist.Hint="Wallet ID"
-                                                        Text="Custom ID"
 													    Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
                                                     <TextBox
                                                         x:Name="WalletAddress"
 														Margin="6,6,6,6" Width="Auto"
 														materialDesign:HintAssist.Hint="Wallet Address"
-                                                        Text="25865daf640696361b432bd517b812270d8459af48f13876108354ee7e028e0e15c13ab5030c"
 														Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
                                                 </StackPanel>
                                                 <Grid>
@@ -327,7 +326,7 @@
                                                     <Button
 														Style="{StaticResource MaterialDesignFlatButton}"
 														IsCancel="True"
-														Command="materialDesign:DialogHost.CloseDialogCommand" HorizontalAlignment="Right" Margin="0,6,6,0" Content="CANCEL">
+														Command="materialDesign:DialogHost.CloseDialogCommand" HorizontalAlignment="Right" Margin="0,6,6,0" Content="CANCEL" Click="btnCancel_Click">
                                                         <Button.CommandParameter>
                                                             <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">False</system:Boolean>
                                                         </Button.CommandParameter>

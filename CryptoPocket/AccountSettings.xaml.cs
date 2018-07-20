@@ -51,6 +51,7 @@ namespace CryptoPocket
         public static string FreeMembership = "Free";
         public static string SaveCustomID;
         public static string SaveWalletAddress;
+        public static string ElectricitiyRate;
         //Create a list to store the result
         public List<string> EMAIL = new List<string>();
         public List<string> USERNAME = new List<string>();
@@ -61,6 +62,8 @@ namespace CryptoPocket
         public List<string> ID_MS = new List<string>();
         public List<string> CUSTOMID = new List<string>();
         public List<string> WALLET = new List<string>();
+        public List<string> ID_ELEC = new List<string>();
+        public List<string> ELECTRICITYRATE = new List<string>();
 
         public bool Signup = false;
         public bool SignupClicked = false;
@@ -175,6 +178,18 @@ namespace CryptoPocket
             }
         }
 
+        public void InsertElectricity()
+        {
+            string query = "INSERT INTO CryptoElectricity (ID, ELECTRICITY) VALUES('" + MainWindow.CurrentID + "', '" + ElectricitiyRate + "')";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+
         public void DeleteMiningSettings()
         {
             string query = "DELETE FROM CryptoMiningSettings WHERE ID='" + Convert.ToString(MainWindow.CurrentID) + "'AND CUSTOMID='" + RemoveComboBoxIDs.Text + "'";
@@ -183,6 +198,29 @@ namespace CryptoPocket
             {
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+
+        //Update statement
+        public void UpdateElectricity()
+        {
+            string query = "UPDATE CryptoElectricity SET ELECTRICITY='" + ElectricitiyRate + "' WHERE ID='" + MainWindow.CurrentID + "'";
+
+            //Open connection
+            if (this.OpenConnection() == true)
+            {
+                //create mysql command
+                MySqlCommand cmd = new MySqlCommand();
+                //Assign the query using CommandText
+                cmd.CommandText = query;
+                //Assign the connection using Connection
+                cmd.Connection = connection;
+
+                //Execute query
+                cmd.ExecuteNonQuery();
+
+                //close connection
                 this.CloseConnection();
             }
         }
@@ -216,6 +254,19 @@ namespace CryptoPocket
                         MessageBox.Show("Not allowed to connected to server.");
                         break;
                 }
+
+                LoginUsername.Text = "";
+                LoginPassword.Password = "";
+                ResetInputTextBox(LoginUsername);
+                ResetInputPassword(LoginPassword);
+
+                txtSignupEmail.Text = "";
+                txtSignupUsername.Text = "";
+                txtSignupPassword.Password = "";
+                ResetInputTextBox(txtSignupEmail);
+                ResetInputTextBox(txtSignupUsername);
+                ResetInputPassword(txtSignupPassword);
+
                 return false;
             }
         }
@@ -314,6 +365,60 @@ namespace CryptoPocket
                     ID_MS.Add(dataReader["ID"] + "");
                     CUSTOMID.Add(dataReader["CUSTOMID"] + "");
                     WALLET.Add(dataReader["WALLET"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+
+        public ObservableCollection<string> SelectMiningSettingsForUser(ObservableCollection<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoMiningSettings WHERE ID='" + MainWindow.CurrentID + "'";
+
+            WalletCustomIDs.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    WalletCustomIDs.Add(dataReader["CUSTOMID"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+
+        public List<string> SelectElectricity(List<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoElectricity WHERE ID='" + MainWindow.CurrentID + "'";
+
+            ID_ELEC.Clear();
+            ELECTRICITYRATE.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    ID_ELEC.Add(dataReader["ID"] + "");
+                    ELECTRICITYRATE.Add(dataReader["ELECTRICITY"] + "");
                 }
 
                 dataReader.Close();
@@ -458,6 +563,8 @@ namespace CryptoPocket
                     SettingsUsername.Text = txtSignupUsername.Text;
                     mw.HeaderUser.Text = txtSignupUsername.Text;
 
+                    ElectricitiyRate = "0.1";
+
                     txtSignupEmail.Text = "";
                     txtSignupUsername.Text = "";
                     txtSignupPassword.Password = "";
@@ -508,6 +615,7 @@ namespace CryptoPocket
 
                 Insert();
                 InsertMember();
+                InsertElectricity();
 
                 Signup = false;
                 SignupClicked = false;
@@ -596,7 +704,17 @@ namespace CryptoPocket
 
                         SelectMember(MEMBERSHIP);
                         SettingsMembership.Text = "Membership: " + MEMBERSHIP.ElementAt(MainWindow.CurrentID - 1);
-                    }
+
+                        Select(ELECTRICITYRATE);
+                        ElectricitiyRate = ELECTRICITYRATE[0];
+                        txtElectricityRate.Text = ElectricitiyRate;
+
+                        SelectMiningSettingsForUser(WalletCustomIDs);
+                        ComboBoxIDs.ItemsSource = WalletCustomIDs;
+
+                        LoginUsername.Text = "";
+                        LoginPassword.Password = "";
+                }
                     else
                     {
                         IncorrectInputTextBox(LoginUsername);
@@ -624,10 +742,39 @@ namespace CryptoPocket
             SettingsMembership.Text = "Membership: Free";
             SettingsDevices.Text = "Connected Devices: N/A";
             SettingsAccount.Text = "Account Balance: M/A";
+            txtElectricityRate.Text = "0.1";
             MainWindow.CurrentID = 0;
             MainWindow.LoggedIn = false;
             WalletCustomIDs.Clear();
             ComboBoxIDs.ItemsSource = null;
+        }
+
+        private void btnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            txtSignupEmail.Text = "";
+            txtSignupUsername.Text = "";
+            txtSignupPassword.Password = "";
+            ResetInputTextBox(txtSignupEmail);
+            ResetInputTextBox(txtSignupUsername);
+            ResetInputPassword(txtSignupPassword);
+
+            LoginUsername.Text = "";
+            LoginPassword.Password = "";
+            ResetInputTextBox(LoginUsername);
+            ResetInputPassword(LoginPassword);
+
+            CustomID.Text = "";
+            WalletAddress.Text = "";
+            RemoveComboBoxIDs.Text = "";
+        }
+
+        private void btnElectricityRate_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (MainWindow.LoggedIn == true)
+            {
+                ElectricitiyRate = txtElectricityRate.Text;
+                UpdateElectricity();
+            }
         }
     }
 }

@@ -31,7 +31,13 @@ namespace CryptoPocket
 
         public class CustomCoinBox
         {
-            public string eg { get; set; }
+            public string CustomCoinName { get; set; }
+            public string ValueUSD { get; set; }
+            public string ValueBTC { get; set; }
+            public string PortfolioQuan { get; set; }
+            public string PortfolioValue { get; set; }
+            public string Change24Hour { get; set; }
+            public string Change7Day { get; set; }
         }
 
         public class CustomWorkerBox
@@ -141,44 +147,6 @@ namespace CryptoPocket
             }
         }
 
-        //Select statement
-        public List<string> Select(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoCustomCoins";
-
-            MySQLReference.CCID.Clear();
-            MySQLReference.CCoin.Clear();
-
-            //Open connection
-            if (OpenConnection() == true)
-            {
-                //Create Command
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                //Create a data reader and Execute the command
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                //Read the data and store them in the list
-                while (dataReader.Read())
-                {
-                    MySQLReference.CCID.Add(dataReader["ID"] + "");
-                    MySQLReference.CCoin.Add(dataReader["COIN"] + "");
-                }
-
-                //close Data Reader
-                dataReader.Close();
-
-                //close Connection
-                CloseConnection();
-
-                //return list to be displayed
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
         public Func<ChartPoint, string> PointLabel { get; set; }
 
         private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
@@ -203,17 +171,17 @@ namespace CryptoPocket
 
         private void btnCustomCoin_Click(object sender, RoutedEventArgs e)
         {
-            CoinBox.Items.Add(new CustomCoinBox() { });
+            CoinBox.Items.Add(new CustomCoinBox() { CustomCoinName = "", ValueUSD = "", ValueBTC = "", PortfolioQuan = "", PortfolioValue = "", Change24Hour = "", Change7Day = ""});
         }
 
         private void btnTradingAddCoin_Click(object sender, RoutedEventArgs e)
         {
-            CoinBox.Items.Add(new CustomCoinBox() { });
+
         }
 
         private void btnTradingRemoveCoin_Click(object sender, RoutedEventArgs e)
         {
-            CoinBox.Items.Add(new CustomCoinBox() { });
+
         }
 
         private void btnCustomWorker_Click(object sender, RoutedEventArgs e)
@@ -223,12 +191,12 @@ namespace CryptoPocket
 
         private void btnMiningAddWorker_Click(object sender, RoutedEventArgs e)
         {
-            CoinBox.Items.Add(new CustomCoinBox() { });
+
         }
 
         private void btnMiningRemoveWorker_Click(object sender, RoutedEventArgs e)
         {
-            CoinBox.Items.Add(new CustomCoinBox() { });
+
         }
 
         private void Header_SelectionChanged(object sender, SelectionChangedEventArgs e)
