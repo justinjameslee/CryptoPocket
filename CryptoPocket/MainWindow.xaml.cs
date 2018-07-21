@@ -42,7 +42,14 @@ namespace CryptoPocket
 
         public class CustomWorkerBox
         {
-            public string eg { get; set; }
+            public string CustomWorkerName { get; set; }
+            public string MiningWorker { get; set; }
+            public string ProfitabilityDay { get; set; }
+            public string Hashrate { get; set; }
+            public string Uptime { get; set; }
+            public string Status { get; set; }
+            public Brush StatusColour { get; set; }
+            public string LastUpdated { get; set; }
         }
 
         MainWindow mw = (MainWindow)Application.Current.MainWindow;
@@ -171,6 +178,7 @@ namespace CryptoPocket
 
         private void btnCustomCoin_Click(object sender, RoutedEventArgs e)
         {
+
             CoinBox.Items.Add(new CustomCoinBox() { CustomCoinName = "", ValueUSD = "", ValueBTC = "", PortfolioQuan = "", PortfolioValue = "", Change24Hour = "", Change7Day = ""});
         }
 
@@ -209,6 +217,12 @@ namespace CryptoPocket
         private void CryptoPocket_Loaded(object sender, RoutedEventArgs e)
         {
             CreateMustFiles();
+
+            if (new FileInfo(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt").Length == 0)
+            {
+                CoinsDetailed = JsonConvert.DeserializeObject<List<MarketCap>>(EaseMethods.API(@"https://api.coinmarketcap.com/v2/listings/"));
+            }
+
             if (new FileInfo(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt").Length == 0)
             {
                 DefaultLogin = true;
@@ -459,10 +473,12 @@ namespace CryptoPocket
         //Checking and Creating Required Files
         public static void CreateMustFiles()
         {
-            if (!File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt"))
+            if (!File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt") || !File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt"))
             {
                 Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session");
+                Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins");
                 File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", "");
+                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt", "");
             }
         }
 

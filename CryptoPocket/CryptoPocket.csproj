@@ -129,6 +129,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="EaseMethods.cs" />
+    <Compile Include="MarketCap.cs" />
     <Compile Include="ProgressDialog.xaml.cs">
       <DependentUpon>ProgressDialog.xaml</DependentUpon>
     </Compile>
@@ -137,6 +139,7 @@
     <Compile Include="SignupComplete.xaml.cs">
       <DependentUpon>SignupComplete.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Trading.cs" />
     <Page Include="AccountSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

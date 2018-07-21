@@ -872,18 +872,20 @@
                                                                 <Grid Width="Auto" Height="90">
                                                                     <Grid HorizontalAlignment="Left" Width="128">
                                                                         <StackPanel Margin="10,10,-59,50">
-                                                                            <TextBlock Text="GPU-01" FontSize="18"/>
+                                                                            <TextBlock Text="{Binding MiningWorker}" FontSize="18"/>
                                                                             <Separator/>
                                                                         </StackPanel>
                                                                     </Grid>
                                                                     <TextBlock Text="Profitability" FontSize="16" Margin="10,40,343,32"/>
-                                                                    <TextBlock Text="USD/DAY: $12.62" Margin="10,63,281,11" RenderTransformOrigin="-0.173,1.625"/>
+                                                                    <TextBlock Text="{Binding ProfitabilityDay}" Margin="10,63,281,11" RenderTransformOrigin="-0.173,1.625"/>
                                                                     <TextBlock Text="Hashrate" FontSize="16" Margin="195,10,174,60"/>
-                                                                    <TextBlock Text="4100H/S" Margin="195,35,141,38"/>
+                                                                    <TextBlock Text="{Binding Hashrate}" Margin="195,35,141,38"/>
                                                                     <TextBlock Text="Up Time" FontSize="16" Margin="299,10,76,60" RenderTransformOrigin="0.459,0.65"/>
-                                                                    <TextBlock Text="1 Days 14 Hours" Margin="299,35,10,38"/>
-                                                                    <TextBlock Text="Online" FontSize="14" Foreground="#DD338B00" Margin="195,62,174.333,10"/>
-                                                                    <TextBlock Text="29 September 2015 12:50 AM" Margin="0,63,11.333,10" RenderTransformOrigin="-0.317,0.882" FontSize="12" HorizontalAlignment="Right"/>
+                                                                    <TextBlock Text="{Binding Uptime}" Margin="299,35,10,38"/>
+                                                                    <!--#DD338B00-->
+                                                                    <TextBlock Text="{Binding Status}" FontSize="14" Foreground="{Binding StatusColour}" Margin="195,62,174.333,10"/>
+                                                                    <TextBlock Text="{Binding LastUpdated}" Margin="0,63,11.333,10" RenderTransformOrigin="-0.317,0.882" FontSize="12" HorizontalAlignment="Right"/>
+                                                                    <!--29 September 2015 12:50 AM-->           
                                                                     <ToggleButton 
 																		Style="{StaticResource MaterialDesignActionToggleButton}"
 																		ToolTip="MaterialDesignActionLightToggleButton" HorizontalAlignment="Right" Margin="0,40,252,26" Width="24" Height="24" Click="CustomWorkerToggle_Click">
