@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/uiautomationprovider.dll")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/double%20ring-1.5s-200px.gif")]
 
 

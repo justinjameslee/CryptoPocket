@@ -18,6 +18,7 @@ using MySql.Data.MySqlClient;
 using System.Windows.Media.Animation;
 using MaterialDesignThemes.Wpf;
 using System.Collections.ObjectModel;
+using System.Windows.Threading;
 
 namespace CryptoPocket
 {
@@ -53,6 +54,7 @@ namespace CryptoPocket
         public static string SaveWalletAddress;
         public static string ElectricitiyRate;
         //Create a list to store the result
+        public List<string> ID = new List<string>();
         public List<string> EMAIL = new List<string>();
         public List<string> USERNAME = new List<string>();
         public List<string> HASH = new List<string>();
@@ -64,6 +66,9 @@ namespace CryptoPocket
         public List<string> WALLET = new List<string>();
         public List<string> ID_ELEC = new List<string>();
         public List<string> ELECTRICITYRATE = new List<string>();
+        public List<string> ID_CC = new List<string>();
+        public List<string> C_COIN = new List<string>();
+        public List<string> C_CURRENCY = new List<string>();
 
         public bool Signup = false;
         public bool SignupClicked = false;
@@ -76,13 +81,6 @@ namespace CryptoPocket
 
         public ObservableCollection<string> WalletCustomIDs { get; set; }
 
-        public string CreateSalt(int size)
-        {
-            var rng = new System.Security.Cryptography.RNGCryptoServiceProvider();
-            var buff = new byte[size];
-            rng.GetBytes(buff);
-            return Convert.ToBase64String(buff);
-        }
         public string GenerateSHA256Hash(string input, string salt)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(input + salt);
@@ -91,70 +89,6 @@ namespace CryptoPocket
             byte[] hash = sha256hashstring.ComputeHash(bytes);
 
             return Convert.ToBase64String(hash);
-        }
-
-        public static string ByteArrayToHexString(byte[] ba)
-        {
-            StringBuilder hex = new StringBuilder(ba.Length * 2);
-            foreach (byte b in ba)
-            {
-                hex.AppendFormat("{0:x2}", b);
-            }
-
-            return hex.ToString();
-        }
-
-        public static byte[] HexStringToByteArray(string hex)
-        {
-            int NumberChars = hex.Length;
-            byte[] bytes = new byte[NumberChars / 2];
-            for (int i = 0; i < NumberChars; i += 2)
-            {
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            }
-
-            return bytes;
-        }
-
-        bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public void Insert()
-        {
-            string query = "INSERT INTO CryptoUsers (EMAIL, USERNAME, HASH, SALT) VALUES('" + EmailUp + "', '" + UserUp + "', '" + hashedpassword + "', '" + salt + "')";
-            
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.ExecuteNonQuery();
-                this.CloseConnection();
-            }
-
-            MainWindow.CurrentID = Select(EMAIL).IndexOf(EmailUp) + 1;
-        }
-
-        public void InsertMember()
-        {
-            string query = "INSERT INTO CryptoMembership (ID, MEMBERSHIP) VALUES('" + Convert.ToString(MainWindow.CurrentID) + "', '" + FreeMembership + "')";
-            
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.ExecuteNonQuery();
-                this.CloseConnection();
-            }
-            SelectMember(MEMBERSHIP);
-            SettingsMembership.Text = "Membership: " + MEMBERSHIP.ElementAt(MainWindow.CurrentID - 1);
         }
 
         public void InsertMiningSettings()
@@ -180,7 +114,7 @@ namespace CryptoPocket
 
         public void InsertElectricity()
         {
-            string query = "INSERT INTO CryptoElectricity (ID, ELECTRICITY) VALUES('" + MainWindow.CurrentID + "', '" + ElectricitiyRate + "')";
+            string query = "INSERT INTO CryptoElectricity (ID, ELECTRICITY) VALUES('" + Convert.ToString(MainWindow.CurrentID) + "', '" + ElectricitiyRate + "')";
 
             if (this.OpenConnection() == true)
             {
@@ -205,7 +139,7 @@ namespace CryptoPocket
         //Update statement
         public void UpdateElectricity()
         {
-            string query = "UPDATE CryptoElectricity SET ELECTRICITY='" + ElectricitiyRate + "' WHERE ID='" + MainWindow.CurrentID + "'";
+            string query = "UPDATE CryptoElectricity SET ELECTRICITY='" + ElectricitiyRate + "' WHERE ID='" + Convert.ToString(MainWindow.CurrentID) + "'";
 
             //Open connection
             if (this.OpenConnection() == true)
@@ -233,39 +167,10 @@ namespace CryptoPocket
                 connection.Open();
                 return true;
             }
-            catch (MySqlException ex)
+            catch (Exception)
             {
-                //When handling errors, you can your application's response based 
-                //on the error number.
-                //The two most common error numbers when connecting are as follows:
-                //0: Cannot connect to server.
-                //1045: Invalid user name and/or password.
-                switch (ex.Number)
-                {
-                    case 0:
-                        MessageBox.Show("Cannot connect to server.  Contact administrator");
-                        break;
-
-                    case 1045:
-                        MessageBox.Show("Invalid username/password, please try again");
-                        break;
-
-                    case 1130:
-                        MessageBox.Show("Not allowed to connected to server.");
-                        break;
-                }
-
-                LoginUsername.Text = "";
-                LoginPassword.Password = "";
-                ResetInputTextBox(LoginUsername);
-                ResetInputPassword(LoginPassword);
-
-                txtSignupEmail.Text = "";
-                txtSignupUsername.Text = "";
-                txtSignupPassword.Password = "";
-                ResetInputTextBox(txtSignupEmail);
-                ResetInputTextBox(txtSignupUsername);
-                ResetInputPassword(txtSignupPassword);
+                DialogHost.CloseDialogCommand.Execute(null, null);
+                mw.ServerError.IsOpen = true;
 
                 return false;
             }
@@ -291,6 +196,7 @@ namespace CryptoPocket
         {
             string query = "SELECT * FROM CryptoUsers";
 
+            ID.Clear();
             EMAIL.Clear();
             USERNAME.Clear();
             HASH.Clear();
@@ -302,6 +208,7 @@ namespace CryptoPocket
                 MySqlDataReader dataReader = cmd.ExecuteReader();
                 while (dataReader.Read())
                 {
+                    ID.Add(dataReader["ID"] + "");
                     EMAIL.Add(dataReader["EMAIL"] + "");
                     USERNAME.Add(dataReader["USERNAME"] + "");
                     HASH.Add(dataReader["HASH"] + "");
@@ -320,7 +227,7 @@ namespace CryptoPocket
         
         public List<string> SelectMember(List<string> Ref)
         {
-            string query = "SELECT * FROM CryptoMembership";
+            string query = "SELECT * FROM CryptoMembership WHERE ID='" + MainWindow.CurrentID + "'";
 
             ID_M.Clear();
             MEMBERSHIP.Clear();
@@ -431,6 +338,37 @@ namespace CryptoPocket
             }
         }
 
+        public List<string> SelectCustomCoins(List<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoCustomCoins WHERE ID='" + Convert.ToString(MainWindow.CurrentID) + "'";
+
+            ID_CC.Clear();
+            C_COIN.Clear();
+            C_CURRENCY.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    ID_CC.Add(dataReader["ID"] + "");
+                    C_COIN.Add(dataReader["COIN"] + "");
+                    C_CURRENCY.Add(dataReader["CURRENCY"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+
+
         private void ThemeChecked(object sender, RoutedEventArgs e)
         {
             if (Theme == false)
@@ -524,54 +462,6 @@ namespace CryptoPocket
             }
         }
 
-        private void btnSignup_Click(object sender, RoutedEventArgs e)
-        {
-            
-
-            SignupClicked = true;
-
-            if (IsValidEmail(txtSignupEmail.Text) == false || txtSignupUsername.Text == "" || txtSignupPassword.Password.Length <= 8 || txtSignupUsername.Text.Length > 20)
-            {
-                IncorrectInputTextBox(txtSignupEmail);
-                IncorrectInputTextBox(txtSignupUsername);
-                IncorrectInputPassword(txtSignupPassword);
-            }
-            else
-            {
-                ResetInputTextBox(txtSignupEmail);
-                ResetInputTextBox(txtSignupUsername);
-                ResetInputPassword(txtSignupPassword);
-                salt = CreateSalt(10);
-                hashedpassword = GenerateSHA256Hash(txtSignupPassword.Password, salt);
-                EmailUp = txtSignupEmail.Text;
-                UserUp = txtSignupUsername.Text;
-
-                if (Select(EMAIL).Contains(EmailUp))
-                {
-                    MessageBox.Show("Email already registered.");
-                }
-                else if (Select(USERNAME).Contains(UserUp))
-                {
-                    MessageBox.Show("Username already taken.");
-                }
-                else
-                {
-                    Signup = true;
-                    MainWindow.LoggedIn = true;
-
-                    SettingsEmail.Text = "Email: " + txtSignupEmail.Text;
-                    SettingsUsername.Text = txtSignupUsername.Text;
-                    mw.HeaderUser.Text = txtSignupUsername.Text;
-
-                    ElectricitiyRate = "0.1";
-
-                    txtSignupEmail.Text = "";
-                    txtSignupUsername.Text = "";
-                    txtSignupPassword.Password = "";
-                }
-            }
-        }
-
         void IncorrectInputTextBox(TextBox x)
         {
             x.BorderBrush = BrushRed;
@@ -605,40 +495,10 @@ namespace CryptoPocket
 
         private void DialogHost_OnDialogClosing(object sender, DialogClosingEventArgs eventArgs)
         {
-            if (SignupClicked == true && Signup == true)
-            {
-                if ((bool)eventArgs.Parameter == false) return;
-                
-                eventArgs.Cancel();
-                
-                eventArgs.Session.UpdateContent(new ProgressDialog());
-
-                Insert();
-                InsertMember();
-                InsertElectricity();
-
-                Signup = false;
-                SignupClicked = false;
-                
-                Task.Delay(TimeSpan.FromSeconds(5))
-                    .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
-                        TaskScheduler.FromCurrentSynchronizationContext());
-
-                
-            }
-            else if (SignupClicked == true)
-            {
-                eventArgs.Cancel();
-                SignupClicked = false;
-            }
-            else if (SaveWallet == true)
+            if (SaveWallet == true)
             {
                 SaveWallet = false;
                 InsertMiningSettings();
-            }
-            else
-            {
-
             }
         }
 
@@ -647,122 +507,41 @@ namespace CryptoPocket
             
         }
 
+        private void SignupButton_Click(object sender, RoutedEventArgs e)
+        {
+            mw.SignUp.IsOpen = true;
+        }
+
         private void EditUser_Click(object sender, RoutedEventArgs e)
         {
-            if (SettingsUsername.Text.Length != 0 && MainWindow.DefaultLogin == false)
+            if (MainWindow.LoggedIn == false)
             {
-                EditUserUsername.Text = "Previous: " + MainWindow.PreviousUsername;
-                LoginUsername.Text = MainWindow.PreviousUsername;
-            }
-            else if (SettingsUsername.Text.Length != 0)
-            {
-                EditUserUsername.Text = "Current: " + SettingsUsername.Text;
-            }
-            else
-            {
-                EditUserUsername.Text = "Current: Guest";
-            }
-        }
-
-        private void btnLogin_Click(object sender, RoutedEventArgs e)
-        {
-            SolidColorBrush CaretDefault = new SolidColorBrush(CaretColor);
-            SolidColorBrush BorderDefault = new SolidColorBrush(BorderColor);
-
-            if (LoginUsername.Text.Length > 20 && LoginPassword.Password.Length <= 8)
-            {
-                IncorrectInputTextBox(LoginUsername);
-                IncorrectInputPassword(LoginPassword);
-            }
-            else if (LoginPassword.Password.Length <= 8)
-            {
-                ResetInputTextBox(LoginUsername);
-                IncorrectInputPassword(LoginPassword);
-            }
-            else if (LoginUsername.Text.Length > 20)
-            {
-                IncorrectInputTextBox(LoginUsername);
-                ResetInputPassword(LoginPassword);
-            }
-            else
-            {
-                try
+                if (SettingsUsername.Text.Length != 0 && MainWindow.DefaultLogin == false)
                 {
-                    int Index = Select(USERNAME).IndexOf(LoginUsername.Text);
-                    hashedpassword = Select(HASH)[Index];
-                    salt = Select(SALT)[Index];
-
-                    if (hashedpassword == GenerateSHA256Hash(LoginPassword.Password, salt))
-                    {
-                        MainWindow.LoggedIn = true;
-
-                        SettingsEmail.Text = "Email: " + Select(EMAIL)[Index];
-                        SettingsUsername.Text = LoginUsername.Text;
-                        mw.HeaderUser.Text = LoginUsername.Text;
-
-                        MainWindow.CurrentID = Select(EMAIL).IndexOf(Select(EMAIL)[Index]) + 1;
-
-                        SelectMember(MEMBERSHIP);
-                        SettingsMembership.Text = "Membership: " + MEMBERSHIP.ElementAt(MainWindow.CurrentID - 1);
-
-                        Select(ELECTRICITYRATE);
-                        ElectricitiyRate = ELECTRICITYRATE[0];
-                        txtElectricityRate.Text = ElectricitiyRate;
-
-                        SelectMiningSettingsForUser(WalletCustomIDs);
-                        ComboBoxIDs.ItemsSource = WalletCustomIDs;
-
-                        LoginUsername.Text = "";
-                        LoginPassword.Password = "";
+                    mw.EditUserUsername.Text = "Previous: " + MainWindow.PreviousUsername;
+                    mw.LoginUsername.Text = MainWindow.PreviousUsername;
                 }
-                    else
-                    {
-                        IncorrectInputTextBox(LoginUsername);
-                        IncorrectInputPassword(LoginPassword);
-                    }
-                }
-                catch (Exception)
+                else if (SettingsUsername.Text.Length != 0)
                 {
-                    IncorrectInputTextBox(LoginUsername);
-                    IncorrectInputPassword(LoginPassword);
+                    mw.EditUserUsername.Text = "Current: " + SettingsUsername.Text;
                 }
+                else
+                {
+                    mw.EditUserUsername.Text = "Current: Guest";
+                }
+
+                mw.Login.IsOpen = true;
             }
-        }
+            else if (MainWindow.LoggedIn == true)
+            {
+                mw.LogoutUser.Text = "User: " + mw.HeaderUser.Text;
 
-        private void btnLogout_Click(object sender, RoutedEventArgs e)
-        {
-            LogoutUser.Text = "User: " + mw.HeaderUser.Text;
-        }
-
-        private void btnConfirmLogout_Click(object sender, RoutedEventArgs e)
-        {
-            mw.HeaderUser.Text = "Guest";
-            SettingsUsername.Text = "Guest";
-            SettingsEmail.Text = "Email: N/A";
-            SettingsMembership.Text = "Membership: Free";
-            SettingsDevices.Text = "Connected Devices: N/A";
-            SettingsAccount.Text = "Account Balance: M/A";
-            txtElectricityRate.Text = "0.1";
-            MainWindow.CurrentID = 0;
-            MainWindow.LoggedIn = false;
-            WalletCustomIDs.Clear();
-            ComboBoxIDs.ItemsSource = null;
+                mw.Logout.IsOpen = true;
+            }
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
-            txtSignupEmail.Text = "";
-            txtSignupUsername.Text = "";
-            txtSignupPassword.Password = "";
-            ResetInputTextBox(txtSignupEmail);
-            ResetInputTextBox(txtSignupUsername);
-            ResetInputPassword(txtSignupPassword);
-
-            LoginUsername.Text = "";
-            LoginPassword.Password = "";
-            ResetInputTextBox(LoginUsername);
-            ResetInputPassword(LoginPassword);
-
             CustomID.Text = "";
             WalletAddress.Text = "";
             RemoveComboBoxIDs.Text = "";
@@ -775,6 +554,11 @@ namespace CryptoPocket
                 ElectricitiyRate = txtElectricityRate.Text;
                 UpdateElectricity();
             }
+        }
+
+        private void btnCloseSettings_Click(object sender, RoutedEventArgs e)
+        {
+            this.Visibility = Visibility.Hidden;
         }
     }
 }

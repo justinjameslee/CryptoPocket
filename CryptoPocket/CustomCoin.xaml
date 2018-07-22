@@ -21,8 +21,8 @@
                 <Button 
             Background="Orange" BorderBrush="Orange"
             Style="{StaticResource MaterialDesignFloatingActionButton}"
-            ToolTip="MaterialDesignFloatingActionButton" HorizontalAlignment="Left" Margin="15,0,20,0" Width="55" Height="55" FontSize="18"
-                    Content="ETH">
+            ToolTip="MaterialDesignFloatingActionButton" HorizontalAlignment="Left" Margin="15,0,20,0" Width="55" Height="55" FontSize="14"
+                    Content="BTCRED">
                 </Button>
                 <materialDesign:PackIcon Kind="TrendingDown" Height="40" Width="40" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,25,10,25"/>
             </Grid>
@@ -62,10 +62,10 @@
                 <!-- Change in Value -->
                 <TextBlock x:Name="txt24Hours" Opacity="100" Text="24 Hours" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="25,4,73,34" RenderTransformOrigin="0.846,0.75"></TextBlock>
                 <TextBlock x:Name="txt7Days" Opacity="100" Text="7 Days" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="39,26,73,12"></TextBlock>
-                <materialDesign:PackIcon x:Name="Icon24Hours" Opacity="100" Grid.Row="1" Kind="TrendingDown" Height="16" Width="15" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="125,25,10,13" RenderTransformOrigin="0.313,1.097" />
-                <TextBlock x:Name="txt24HoursV" Opacity="100" Text="$20.62" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="82,4,30,34"></TextBlock>
-                <TextBlock x:Name="txt7DaysV" Opacity="100" Text="$2.12" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="89,26,30,12" RenderTransformOrigin="-0.551,0.959"></TextBlock>
-                <materialDesign:PackIcon x:Name="Icon7Days" Opacity="100" Grid.Row="1" Kind="TrendingUp" Height="16" Width="15" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="125,4,10,34" RenderTransformOrigin="0.313,1.097" />
+                <materialDesign:PackIcon x:Name="Icon24Hours" Opacity="100" Grid.Row="1" Kind="TrendingDown" Height="16" Width="15" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="125,25,10,13" RenderTransformOrigin="0.313,1.097" />
+                <TextBlock x:Name="txt24HoursV" Opacity="100" Text="-1.11%" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="82,4,30,34"></TextBlock>
+                <TextBlock x:Name="txt7DaysV" Opacity="100" Text="$2.12" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="89,26,30,12" RenderTransformOrigin="-0.551,0.959"></TextBlock>
+                <materialDesign:PackIcon x:Name="Icon7Days" Opacity="100" Grid.Row="1" Kind="TrendingUp" Height="16" Width="15" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="125,4,10,34" RenderTransformOrigin="0.313,1.097" />
             </Grid>
         </Grid>
     </materialDesign:ColorZone>

@@ -8,6 +8,7 @@ namespace CryptoPocket
 {
     public static class References
     {
-        public static MainWindow MainPocket = new MainWindow();
+        public static EaseMethods EaseMethods = new EaseMethods();
+        public static MainWindow MainW = new MainWindow();
     }
 }

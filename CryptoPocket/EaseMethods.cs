@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CryptoPocket
 {
-    class EaseMethods
+    public class EaseMethods
     {
         public static string jsonString;
 
@@ -71,13 +73,25 @@ namespace CryptoPocket
                 return value;
             }
         }
-
-        public static string RemoveAfterLetter(string Remove, string Letter)
+        public static string RemoveKeepingColumnAndDots(string value)
         {
-            Worker.TimeIndexRemove = Remove.LastIndexOf(Letter);
-            if (Worker.TimeIndexRemove > 0) { Remove = Remove.Substring(0, Worker.TimeIndexRemove); }
-            return Remove;
+            var allowedChars = "1234567890:.";
+            try
+            {
+                return new string(value.Where(c => allowedChars.Contains(c)).ToArray());
+            }
+            catch (Exception)
+            {
+                return value;
+            }
         }
+
+        //public static string RemoveAfterLetter(string Remove, string Letter)
+        //{
+        //    Worker.TimeIndexRemove = Remove.LastIndexOf(Letter);
+        //    if (Worker.TimeIndexRemove > 0) { Remove = Remove.Substring(0, Worker.TimeIndexRemove); }
+        //    return Remove;
+        //}
 
         public static string API(string url)
         {
@@ -120,41 +134,6 @@ namespace CryptoPocket
             {
                 return "";
             }
-        }
-    }
-
-    public class EaseOptionsMethods : Options
-    {
-        //EASE OF ACCESS
-        //HIDE ALL LBL EXCEPT SAVE FOUND
-        public void HideConfirmationLabelsSave()
-        {
-            lblMaxPages.Visible = false;
-            lblConfirmed.Visible = false;
-            lblSaved.Visible = false;
-            lblNewPage.Visible = false;
-            lblNoSave.Visible = false;
-            lblSaveFound.Visible = true;
-        }
-        //HIDE ALL LBL EXCEPT NO SAVE FOUND
-        public void HideConfirmationLabelsNoSave()
-        {
-            lblConfirmed.Visible = false;
-            lblSaved.Visible = false;
-            lblNewPage.Visible = false;
-            lblSaveFound.Visible = false;
-            lblMaxPages.Visible = false;
-            lblNoSave.Visible = true;
-        }
-        //HIDE ALL LBL EXCEPT NEW PAGE CREATED
-        public void HideConfirmationLabelsNewSave()
-        {
-            lblMaxPages.Visible = false;
-            lblConfirmed.Visible = false;
-            lblSaved.Visible = false;
-            lblNoSave.Visible = false;
-            lblSaveFound.Visible = false;
-            lblNewPage.Visible = true;
         }
     }
 }

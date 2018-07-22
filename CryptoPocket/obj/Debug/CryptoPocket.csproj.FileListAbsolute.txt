@@ -205,7 +205,6 @@ C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Materia
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\MySql.Data.xml
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\MySql.Data.Entity.EF6.xml
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Newtonsoft.Json.xml
-C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.csprojResolveAssemblyReference.cache
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\AccountSettings.g.cs
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CustomWorker.g.cs
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CustomCoin.g.cs
@@ -227,7 +226,6 @@ C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\Progres
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\SignupComplete.g.cs
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\SignupComplete.baml
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\UIAutomationProvider.dll
-C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\UIAutomationProvider.dll
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\WPFTextBoxAutoComplete.dll
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\WPFTextBoxAutoComplete.pdb
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.csprojAssemblyReference.cache
@@ -295,3 +293,5 @@ C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.csproj.GenerateResource.cache
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.csproj.CoreCompileInputs.cache
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.csproj.CopyComplete
+C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.csprojResolveAssemblyReference.cache
+C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\Double Ring-1.5s-200px.gif
