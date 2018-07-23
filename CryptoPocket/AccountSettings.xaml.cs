@@ -32,7 +32,6 @@ namespace CryptoPocket
             InitializeComponent();
             string DatabaseConnectionString = Properties.Settings.Default.ConnectionString;
             connection = new MySqlConnection(DatabaseConnectionString);
-            WalletCustomIDs = new ObservableCollection<string>();
         }
         
         public static string BaseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -52,21 +51,9 @@ namespace CryptoPocket
         public static string FreeMembership = "Free";
         public static string ElectricitiyRate;
         //Create a list to store the result
-        public List<string> ID = new List<string>();
-        public List<string> EMAIL = new List<string>();
-        public List<string> USERNAME = new List<string>();
-        public List<string> HASH = new List<string>();
-        public List<string> SALT = new List<string>();
-        public List<string> ID_M = new List<string>();
-        public List<string> MEMBERSHIP = new List<string>();
-        public List<string> ID_MS = new List<string>();
-        public List<string> CUSTOMID = new List<string>();
-        public List<string> WALLET = new List<string>();
+        
         public List<string> ID_ELEC = new List<string>();
         public List<string> ELECTRICITYRATE = new List<string>();
-        public List<string> ID_CC = new List<string>();
-        public List<string> C_COIN = new List<string>();
-        public List<string> C_CURRENCY = new List<string>();
 
         public bool Signup = false;
         public bool SignupClicked = false;
@@ -76,8 +63,7 @@ namespace CryptoPocket
         SolidColorBrush BrushRed = new SolidColorBrush(Colors.Red);
         Color CaretColor = (Color)ColorConverter.ConvertFromString("#FFFFC107");
         Color BorderColor = (Color)ColorConverter.ConvertFromString("#89000000");
-
-        public ObservableCollection<string> WalletCustomIDs { get; set; }
+        
 
         public string GenerateSHA256Hash(string input, string salt)
         {
@@ -144,182 +130,7 @@ namespace CryptoPocket
             }
         }
 
-        //Select statement
-        public List<string> Select(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoUsers";
-
-            ID.Clear();
-            EMAIL.Clear();
-            USERNAME.Clear();
-            HASH.Clear();
-            SALT.Clear();
-            
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-                while (dataReader.Read())
-                {
-                    ID.Add(dataReader["ID"] + "");
-                    EMAIL.Add(dataReader["EMAIL"] + "");
-                    USERNAME.Add(dataReader["USERNAME"] + "");
-                    HASH.Add(dataReader["HASH"] + "");
-                    SALT.Add(dataReader["SALT"] + "");
-                }
-                
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
         
-        public List<string> SelectMember(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoMembership WHERE ID='" + MainWindow.CurrentID + "'";
-
-            ID_M.Clear();
-            MEMBERSHIP.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    ID_M.Add(dataReader["ID"] + "");
-                    MEMBERSHIP.Add(dataReader["MEMBERSHIP"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-
-        public List<string> SelectMiningSettings(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoMiningSettings";
-
-            ID_MS.Clear();
-            CUSTOMID.Clear();
-            WALLET.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    ID_MS.Add(dataReader["ID"] + "");
-                    CUSTOMID.Add(dataReader["CUSTOMID"] + "");
-                    WALLET.Add(dataReader["WALLET"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-        public ObservableCollection<string> SelectMiningSettingsForUser(ObservableCollection<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoMiningSettings WHERE ID='" + MainWindow.CurrentID + "'";
-
-            WalletCustomIDs.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    WalletCustomIDs.Add(dataReader["CUSTOMID"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-        public List<string> SelectElectricity(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoElectricity WHERE ID='" + MainWindow.CurrentID + "'";
-
-            ID_ELEC.Clear();
-            ELECTRICITYRATE.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    ID_ELEC.Add(dataReader["ID"] + "");
-                    ELECTRICITYRATE.Add(dataReader["ELECTRICITY"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-        public List<string> SelectCustomCoins(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoCustomCoins WHERE ID='" + Convert.ToString(MainWindow.CurrentID) + "'";
-
-            ID_CC.Clear();
-            C_COIN.Clear();
-            C_CURRENCY.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    ID_CC.Add(dataReader["ID"] + "");
-                    C_COIN.Add(dataReader["COIN"] + "");
-                    C_CURRENCY.Add(dataReader["CURRENCY"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
 
         public ICommand ToggleBaseCommand { get; } = new AnotherCommandImplementation(o => ApplyBase((bool)o));
 
