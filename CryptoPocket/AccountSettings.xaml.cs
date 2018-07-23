@@ -50,8 +50,6 @@ namespace CryptoPocket
         public static string UserUp;
         public static string EmailUp;
         public static string FreeMembership = "Free";
-        public static string SaveCustomID;
-        public static string SaveWalletAddress;
         public static string ElectricitiyRate;
         //Create a list to store the result
         public List<string> ID = new List<string>();
@@ -89,51 +87,6 @@ namespace CryptoPocket
             byte[] hash = sha256hashstring.ComputeHash(bytes);
 
             return Convert.ToBase64String(hash);
-        }
-
-        public void InsertMiningSettings()
-        {
-            string query = "INSERT INTO CryptoMiningSettings (ID, CUSTOMID, WALLET) VALUES('" + Convert.ToString(MainWindow.CurrentID) + "', '" + SaveCustomID + "', '" + SaveWalletAddress + "')";
-
-            if (this.OpenConnection() == true)
-            {
-                try
-                {
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
-                    cmd.ExecuteNonQuery();
-                    this.CloseConnection();
-                    WalletCustomIDs.Add(SaveCustomID);
-                    ComboBoxIDs.ItemsSource = WalletCustomIDs;
-                }
-                catch (Exception)
-                {
-                    MessageBox.Show("Duplicate Custom ID Entry");
-                }
-            }
-        }
-
-        public void InsertElectricity()
-        {
-            string query = "INSERT INTO CryptoElectricity (ID, ELECTRICITY) VALUES('" + Convert.ToString(MainWindow.CurrentID) + "', '" + ElectricitiyRate + "')";
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.ExecuteNonQuery();
-                this.CloseConnection();
-            }
-        }
-
-        public void DeleteMiningSettings()
-        {
-            string query = "DELETE FROM CryptoMiningSettings WHERE ID='" + Convert.ToString(MainWindow.CurrentID) + "'AND CUSTOMID='" + RemoveComboBoxIDs.Text + "'";
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.ExecuteNonQuery();
-                this.CloseConnection();
-            }
         }
 
         //Update statement
@@ -368,11 +321,18 @@ namespace CryptoPocket
             }
         }
 
+        public ICommand ToggleBaseCommand { get; } = new AnotherCommandImplementation(o => ApplyBase((bool)o));
+
+        private static void ApplyBase(bool isDark)
+        {
+            new PaletteHelper().SetLightDark(isDark);
+        }
 
         private void ThemeChecked(object sender, RoutedEventArgs e)
         {
             if (Theme == false)
             {
+                mw.Background = new SolidColorBrush(Colors.Gray);
                 Application.Current.Resources["txtColor"] = new SolidColorBrush(Colors.White);
                 Application.Current.Resources["txtBlack"] = new SolidColorBrush(Colors.Black);
                 Application.Current.Resources["bgColor"] = new SolidColorBrush(Colors.Gray);
@@ -381,6 +341,7 @@ namespace CryptoPocket
             }
             else if (Theme == true)
             {
+                mw.Background = new SolidColorBrush(Colors.WhiteSmoke);
                 Application.Current.Resources["txtColor"] = new SolidColorBrush(Colors.Black);
                 Application.Current.Resources["txtBlack"] = new SolidColorBrush(Colors.Black);
                 Application.Current.Resources["bgColor"] = new SolidColorBrush(Colors.White);
@@ -389,44 +350,7 @@ namespace CryptoPocket
             }
         }
 
-        private void btnSaveWallet_Click(object sender, RoutedEventArgs e)
-        {
-            if (CustomID.Text.Length == 0 || WalletAddress.Text.Length == 0)
-            {
-                IncorrectInputTextBox(CustomID);
-                IncorrectInputTextBox(WalletAddress);
-            }
-            else if (MainWindow.LoggedIn == false)
-            {
-                MessageBox.Show("Guest user cannot save data!");
-            }
-            else
-            {
-                ResetInputTextBox(CustomID);
-                ResetInputTextBox(WalletAddress);
-                if (WalletCustomIDs.Contains(CustomID.Text))
-                {
-                    
-                }
-                else
-                {
-                    SaveWallet = true;
-                    SaveCustomID = CustomID.Text;
-                    SaveWalletAddress = WalletAddress.Text;
-                }
-            }
-                
-        }
-
-        private void btnRemoveWallet_Click(object sender, RoutedEventArgs e)
-        {
-            if (RemoveComboBoxIDs.Text.Length != 0)
-            {
-                DeleteMiningSettings();
-                WalletCustomIDs.Remove(RemoveComboBoxIDs.Text);
-                ComboBoxIDs.ItemsSource = WalletCustomIDs;
-            }
-        }
+        
 
         private void OnTopChecked(object sender, RoutedEventArgs e)
         {
@@ -462,44 +386,9 @@ namespace CryptoPocket
             }
         }
 
-        void IncorrectInputTextBox(TextBox x)
-        {
-            x.BorderBrush = BrushRed;
-            x.CaretBrush = BrushRed;
-
-        }
-
-        void IncorrectInputPassword(PasswordBox x)
-        {
-            x.BorderBrush = BrushRed;
-            x.CaretBrush = BrushRed;
-        }
-
-        void ResetInputTextBox(TextBox x)
-        {
-            SolidColorBrush CaretDefault = new SolidColorBrush(CaretColor);
-            SolidColorBrush BorderDefault = new SolidColorBrush(BorderColor);
-
-            x.BorderBrush = BorderDefault;
-            x.CaretBrush = CaretDefault;
-        }
-
-        void ResetInputPassword(PasswordBox x)
-        {
-            SolidColorBrush CaretDefault = new SolidColorBrush(CaretColor);
-            SolidColorBrush BorderDefault = new SolidColorBrush(BorderColor);
-
-            x.BorderBrush = BorderDefault;
-            x.CaretBrush = CaretDefault;
-        }
-
         private void DialogHost_OnDialogClosing(object sender, DialogClosingEventArgs eventArgs)
         {
-            if (SaveWallet == true)
-            {
-                SaveWallet = false;
-                InsertMiningSettings();
-            }
+
         }
 
         private void AccountSettings_Loaded(object sender, RoutedEventArgs e)
@@ -540,13 +429,6 @@ namespace CryptoPocket
             }
         }
 
-        private void btnCancel_Click(object sender, RoutedEventArgs e)
-        {
-            CustomID.Text = "";
-            WalletAddress.Text = "";
-            RemoveComboBoxIDs.Text = "";
-        }
-
         private void btnElectricityRate_LostFocus(object sender, RoutedEventArgs e)
         {
             if (MainWindow.LoggedIn == true)
@@ -559,6 +441,19 @@ namespace CryptoPocket
         private void btnCloseSettings_Click(object sender, RoutedEventArgs e)
         {
             this.Visibility = Visibility.Hidden;
+        }
+
+        private void btnManageWallet_Click(object sender, RoutedEventArgs e)
+        {
+            var Button = (Button)sender;
+            if (Button.Name == "btnSaveWalletID")
+            {
+                mw.SaveWalletID.IsOpen = true;
+            }
+            else if (Button.Name == "btnRemoveWalletID")
+            {
+                mw.RemoveWalletID.IsOpen = true;
+            }
         }
     }
 }

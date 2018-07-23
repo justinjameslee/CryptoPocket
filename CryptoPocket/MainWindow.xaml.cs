@@ -79,7 +79,7 @@ namespace CryptoPocket
 
         Color HoverColour = (Color)ColorConverter.ConvertFromString("#FFFFCC33");
         Color UnhoverColour = (Color)ColorConverter.ConvertFromString("#FFFEC007");
-        
+
         public static string initialCoinList;
         public static string relevantCoinList;
         public static string[] CoinListA;
@@ -128,6 +128,8 @@ namespace CryptoPocket
 
         public static bool SigningUp;
         public static bool LoggingIn;
+        public static bool SavingWalletID;
+        public static bool RemovingWalletID;
 
         public static string strLoginEmail;
         public static string strLoginUsername;
@@ -136,6 +138,9 @@ namespace CryptoPocket
         public static string SignupEmail;
         public static string SingupUsername;
         public static string SignUpPassword;
+
+        public static string SaveCustomID;
+        public static string SaveWalletAddress;
 
         public bool SettingsActive;
 
@@ -153,28 +158,12 @@ namespace CryptoPocket
 
             string DatabaseConnectionString = Properties.Settings.Default.ConnectionString;
             connection = new MySqlConnection(DatabaseConnectionString);
-            
-        }
 
-        public ICommand ToggleBaseCommand { get; } = new AnotherCommandImplementation(o => ApplyBase((bool)o));
-
-        private static void ApplyBase(bool isDark)
-        {
-            new PaletteHelper().SetLightDark(isDark);
         }
 
         private void ThemeChecked(object sender, RoutedEventArgs e)
         {
-            if (AccountSettings.Theme == false)
-            {
-                this.Background = new SolidColorBrush(Colors.Gray);
-                AccountSettings.Theme = true;
-            }
-            else if (AccountSettings.Theme == true)
-            {
-                this.Background = new SolidColorBrush(Colors.WhiteSmoke);
-                AccountSettings.Theme = false;
-            }
+
         }
 
         private bool OpenConnection()
@@ -207,10 +196,10 @@ namespace CryptoPocket
                 return false;
             }
         }
-        
+
         public void DeleteCustomCoins()
         {
-            string query = "DELETE FROM CryptoCustomCoins WHERE ID='" + MainWindow.CurrentID + "'";
+            string query = "DELETE FROM CryptoCustomCoins WHERE ID='" + CurrentID + "'";
 
             if (this.OpenConnection() == true)
             {
@@ -222,7 +211,7 @@ namespace CryptoPocket
 
         public void InsertCustomCoins(string Coin, string Currency)
         {
-            string query = "INSERT INTO CryptoCustomCoins (ID, COIN, CURRENCY) VALUES('" + Convert.ToString(MainWindow.CurrentID) + "', '" + Coin + "', '" + Currency + "')";
+            string query = "INSERT INTO CryptoCustomCoins (ID, COIN, CURRENCY) VALUES('" + CurrentID + "', '" + Coin + "', '" + Currency + "')";
 
             if (this.OpenConnection() == true)
             {
@@ -259,7 +248,7 @@ namespace CryptoPocket
             }
         }
 
-        
+
 
         public void CustomCoinCalculation()
         {
@@ -279,7 +268,7 @@ namespace CryptoPocket
                     ChangeCurrency = ComboCoinPercentage.Text;
                     CustomCoin = CoinComboBox.Text;
                 }
-                
+
 
                 CoinToggled = false;
 
@@ -493,7 +482,7 @@ namespace CryptoPocket
             AccountSettings.Visibility = Visibility.Hidden;
         }
 
-        
+
 
         private void CryptoPocket_Loaded(object sender, RoutedEventArgs e)
         {
@@ -504,7 +493,7 @@ namespace CryptoPocket
                 string url = @"https://api.coinmarketcap.com/v2/listings/";
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                
+
                 request.AutomaticDecompression = DecompressionMethods.GZip;
 
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
@@ -552,7 +541,7 @@ namespace CryptoPocket
                 dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
                 dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
                 dispatcherTimer.Start();
-                
+
             }
         }
 
@@ -607,7 +596,7 @@ namespace CryptoPocket
                     tempIcon7Days.Opacity = 0;
                     CoinToggled = true;
                     tempToggleCoinText.Text = "Portfolio Value";
-                    
+
                 }
                 else if (CoinToggled == true)
                 {
@@ -627,7 +616,7 @@ namespace CryptoPocket
             {
 
             }
-            
+
         }
 
         private void CustomWorkerToggle_Click(object sender, RoutedEventArgs e)
@@ -729,7 +718,7 @@ namespace CryptoPocket
             DoubleAnimation animation = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5));
             CustomCoinButton.BeginAnimation(Button.OpacityProperty, animation);
         }
-        
+
         private void Settings_Click(object sender, RoutedEventArgs e)
         {
             if (SettingsActive == false)
@@ -737,12 +726,12 @@ namespace CryptoPocket
                 AccountSettings.Visibility = Visibility.Visible;
                 SettingsActive = true;
             }
-            else if (SettingsActive ==  true)
+            else if (SettingsActive == true)
             {
                 AccountSettings.Visibility = Visibility.Hidden;
                 SettingsActive = false;
             }
-            
+
         }
 
         private void Header_Click(object sender, MouseButtonEventArgs e)
@@ -762,7 +751,7 @@ namespace CryptoPocket
             {
                 File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", HeaderUser.Text);
                 DeleteCustomCoins();
-                for(int x = 0; x < SessionCustomCoins.Count; x++)
+                for (int x = 0; x < SessionCustomCoins.Count; x++)
                 {
                     string coin = SessionCustomCoins[x];
                     string Currency = SessionCustomCoinsCurrency[x];
@@ -929,6 +918,63 @@ namespace CryptoPocket
             }
         }
 
+        public void InsertElectricity()
+        {
+            string query = "INSERT INTO CryptoElectricity (ID, ELECTRICITY) VALUES('" + CurrentID + "', '" + AccountSettings.ElectricitiyRate + "')";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+
+        private Task InsertMiningSettings()
+        {
+            return Task.Run(() =>
+            {
+                string query = "INSERT INTO CryptoMiningSettings (ID, CUSTOMID, WALLET) VALUES('" + CurrentID + "', '" + SaveCustomID + "', '" + SaveWalletAddress + "')";
+
+                if (this.OpenConnection() == true)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand(query, connection);
+                        cmd.ExecuteNonQuery();
+                        this.CloseConnection();
+
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            AccountSettings.WalletCustomIDs.Add(SaveCustomID);
+                            AccountSettings.ComboBoxIDs.ItemsSource = AccountSettings.WalletCustomIDs;
+                        });
+                    }
+                    catch (Exception)
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            ProgressDialog.IsOpen = false;
+                            SaveWalletIDInfo.IsOpen = true;
+                        });
+                        
+                    }
+                }
+            });
+        }
+
+        public void DeleteMiningSettings()
+        {
+            string query = "DELETE FROM CryptoMiningSettings WHERE ID='" + CurrentID + "'AND CUSTOMID='" + RemoveComboBoxIDs.Text + "'";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+
         private void dispatcherTimer2_Tick(object sender, EventArgs e)
         {
             ProgressDialog.IsOpen = false;
@@ -961,6 +1007,26 @@ namespace CryptoPocket
             LoggingIn = false;
 
             SignUp.IsOpen = false;
+
+            ProgressDialog.IsOpen = true;
+        }
+
+        private void btnSaveWallet_Click(object sender, RoutedEventArgs e)
+        {
+            SavingWalletID = true;
+            RemovingWalletID = false;
+
+            SaveWalletID.IsOpen = false;
+
+            ProgressDialog.IsOpen = true;
+        }
+
+        private void btnRemoveWallet_Click(object sender, RoutedEventArgs e)
+        {
+            SavingWalletID = false;
+            RemovingWalletID = true;
+
+            RemoveWalletID.IsOpen = false;
 
             ProgressDialog.IsOpen = true;
         }
@@ -1011,6 +1077,11 @@ namespace CryptoPocket
                     hashedpassword = GenerateSHA256Hash(SignUpPassword, salt);
                     EmailUp = SignupEmail;
                     UserUp = SingupUsername;
+
+                    AccountSettings.ElectricitiyRate = "0.1";
+
+                    AccountSettings.WalletCustomIDs.Clear();
+                    AccountSettings.ComboBoxIDs.ItemsSource = null;
 
                     InsertNewUser();
                 }
@@ -1071,7 +1142,7 @@ namespace CryptoPocket
                 else
                 {
                     dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
-                    dispatcherTimer.Interval = new TimeSpan(0, 0, 15);
+                    dispatcherTimer.Interval = new TimeSpan(0, 0, 25);
                     dispatcherTimer.Start();
 
                     LoginUser();
@@ -1080,37 +1151,77 @@ namespace CryptoPocket
 
             //Logging Out Calculation Pt.1
 
-            else if (LoggedIn == true && SigningUp == false && LoggingIn == false)
+            else if (LoggedIn == true && SigningUp == false && LoggingIn == false && SavingWalletID == false)
             {
                 dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
                 dispatcherTimer.Interval = new TimeSpan(0, 0, 3);
                 dispatcherTimer.Start();
 
-                HeaderUser.Text = "Guest";
-                AccountSettings.SettingsUsername.Text = "Guest";
-                AccountSettings.SettingsEmail.Text = "Email: N/A";
-                AccountSettings.SettingsMembership.Text = "Membership: Free";
-                AccountSettings.SettingsDevices.Text = "Connected Devices: N/A";
-                AccountSettings.SettingsAccount.Text = "Account Balance: M/A";
-                AccountSettings.txtElectricityRate.Text = "0.1";
-                CurrentID = 0;
-                LoggedIn = false;
-                AccountSettings.WalletCustomIDs.Clear();
-                AccountSettings.ComboBoxIDs.ItemsSource = null;
+                LogoutUserCalc();
+            }
 
-                AccountSettings.LoginIcon.Kind = PackIconKind.Login;
-                AccountSettings.LoginEditButton.ToolTip = "Login";
+            //Saving Wallet ID | Pt.1
 
-                DeleteCustomCoins();
-                for (int x = 0; x < SessionCustomCoins.Count; x++)
+            else if (SavingWalletID == true)
+            {
+                SavingWalletID = false;
+
+                if (CustomID.Text.Length == 0 || WalletAddress.Text.Length == 0 || LoggedIn == false)
                 {
-                    string coin = SessionCustomCoins[x];
-                    string Currency = SessionCustomCoinsCurrency[x];
-                    InsertCustomCoins(coin, Currency);
+                    ProgressDialog.IsOpen = false;
+                    SaveWalletIDInfo.IsOpen = true;
+                    SaveWalletIDInfoTitle.Text = "Save Wallet ID Form Info";
+                    SaveWalletIDInfo1.Text = "Wallet ID and Wallet Address fields cannot be empty.";
+                    SaveWalletIDInfo2.Opacity = 100;
+                    SaveWalletIDInfo3.Opacity = 100;
                 }
-                CoinBox.Items.Clear();
-                SessionCustomCoins.Clear();
-                SessionCustomCoinsCurrency.Clear();
+                else
+                {
+                    if (AccountSettings.WalletCustomIDs.Contains(CustomID.Text))
+                    {
+                        ProgressDialog.IsOpen = false;
+                        SaveWalletIDInfo.IsOpen = true;
+                        SaveWalletIDInfoTitle.Text = "Save Wallet ID Form Info";
+                        SaveWalletIDInfo1.Text = "Wallet ID and Wallet Address fields cannot be empty.";
+                        SaveWalletIDInfo2.Opacity = 100;
+                        SaveWalletIDInfo3.Opacity = 100;
+                    }
+                    else
+                    {
+                        dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
+                        dispatcherTimer.Interval = new TimeSpan(0, 0, 3);
+                        dispatcherTimer.Start();
+
+                        SaveCustomID = CustomID.Text;
+                        SaveWalletAddress = WalletAddress.Text;
+
+                        InsertWalletID();
+                    }
+                }
+            }
+
+            //Remove Wallet ID | Pt.1
+
+            else if (RemovingWalletID == true)
+            {
+                RemovingWalletID = false;
+
+                if (RemoveComboBoxIDs.Text.Length != 0 && LoggedIn == true)
+                {
+                    dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
+                    dispatcherTimer.Interval = new TimeSpan(0, 0, 3);
+                    dispatcherTimer.Start();
+
+                    DeleteWalletID();
+                }
+                else if (LoggedIn == false)
+                {
+                    ProgressDialog.IsOpen = false;
+                    RemoveWalletIDInfo.IsOpen = true;
+                    RemoveWalletIDInfoTitle.Text = "Remove Wallet ID Form Info";
+                    RemoveWalletIDInfo1.Text = "Wallet ID field cannot be empty.";
+                    RemoveWalletIDInfo2.Opacity = 100;
+                }
             }
         }
 
@@ -1157,7 +1268,7 @@ namespace CryptoPocket
                     {
                         Insert();
                         InsertMember();
-                        AccountSettings.InsertElectricity();
+                        InsertElectricity();
 
                         this.Dispatcher.Invoke(() =>
                         {
@@ -1168,15 +1279,15 @@ namespace CryptoPocket
                             AccountSettings.SettingsUsername.Text = UserUp;
                             HeaderUser.Text = UserUp;
 
-                            AccountSettings.ElectricitiyRate = "0.1";
-
                             txtSignupEmail.Text = "";
                             txtSignupUsername.Text = "";
                             txtSignupPassword.Password = "";
 
+                            AccountSettings.txtElectricityRate.Text = AccountSettings.ElectricitiyRate;
 
                             AccountSettings.LoginIcon.Kind = PackIconKind.Logout;
                             AccountSettings.LoginEditButton.ToolTip = "Logout";
+                            AccountSettings.LoginText.Text = "LOGOUT";
 
                             LoggedIn = true;
                         });
@@ -1252,6 +1363,7 @@ namespace CryptoPocket
 
                             AccountSettings.LoginIcon.Kind = PackIconKind.Logout;
                             AccountSettings.LoginEditButton.ToolTip = "Logout";
+                            AccountSettings.LoginText.Text = "LOGOUT";
 
                             LoggedIn = true;
                         });
@@ -1267,9 +1379,10 @@ namespace CryptoPocket
                                 LoginInfo.IsOpen = true;
                                 LoginInfoTitle.Text = "Invalid Input";
                                 LoginInfo1.Text = "Password is incorrect.";
+                                LoginInfo2.Opacity = 0;
                                 LoginPassword.Password = "";
                             });
-                            
+
                         }
                         else
                         {
@@ -1280,9 +1393,10 @@ namespace CryptoPocket
                                 LoginInfo.IsOpen = true;
                                 LoginInfoTitle.Text = "Invalid Input";
                                 LoginInfo1.Text = "Username or Password is incorrect.";
+                                LoginInfo2.Opacity = 0;
                                 LoginPassword.Password = "";
                             });
-                            
+
                         }
                     }
                 }
@@ -1295,6 +1409,7 @@ namespace CryptoPocket
                         LoginInfo.IsOpen = true;
                         LoginInfoTitle.Text = "Server-side Issue";
                         LoginInfo1.Text = "Please try again later.";
+                        LoginInfo2.Opacity = 0;
                         LoginPassword.Password = "";
                     });
                 }
@@ -1396,6 +1511,121 @@ namespace CryptoPocket
             });
         }
 
+        async Task LogoutUserCalc()
+        {
+            await LogoutUserCalculation();
+        }
+
+        private Task LogoutUserCalculation()
+        {
+            return Task.Run(() => 
+            {
+                try
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        AccountSettings.WalletCustomIDs.Clear();
+                        AccountSettings.ComboBoxIDs.ItemsSource = null;
+
+                        DeleteCustomCoins();
+                        for (int x = 0; x < SessionCustomCoins.Count; x++)
+                        {
+                            string coin = SessionCustomCoins[x];
+                            string Currency = SessionCustomCoinsCurrency[x];
+                            InsertCustomCoins(coin, Currency);
+                        }
+                        CoinBox.Items.Clear();
+                        SessionCustomCoins.Clear();
+                        SessionCustomCoinsCurrency.Clear();
+
+                        AccountSettings.LoginIcon.Kind = PackIconKind.Login;
+                        AccountSettings.LoginEditButton.ToolTip = "Login";
+                        AccountSettings.LoginText.Text = "LOGIN";
+
+                        HeaderUser.Text = "Guest";
+                        AccountSettings.SettingsUsername.Text = "Guest";
+                        AccountSettings.SettingsEmail.Text = "Email: N/A";
+                        AccountSettings.SettingsMembership.Text = "Membership: Free";
+                        AccountSettings.SettingsDevices.Text = "Connected Devices: N/A";
+                        AccountSettings.txtElectricityRate.Text = "0.1";
+                        AccountSettings.ElectricitiyRate = "0.1";
+                        CurrentID = 0;
+                        LoggedIn = false;
+                    });
+                }
+                catch (Exception)
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        dispatcherTimer.Stop();
+                        Logout.IsOpen = false;
+                        ServerError.IsOpen = true;
+                    });
+                }
+            });
+        }
+
+        async Task InsertWalletID()
+        {
+            await InsertWalletIDCalculation();
+        }
+
+        private Task InsertWalletIDCalculation()
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    InsertMiningSettings();
+                    CustomID.Text = "";
+                    WalletAddress.Text = "";
+                }
+                catch (Exception)
+                {
+                    dispatcherTimer.Stop();
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        ProgressDialog.IsOpen = false;
+                        SaveWalletIDInfo.IsOpen = true;
+                        SaveWalletIDInfoTitle.Text = "Server-side Issue";
+                        SaveWalletIDInfo1.Text = "Please try again later.";
+                        SaveWalletIDInfo2.Opacity = 0;
+                        SaveWalletIDInfo3.Opacity = 0;
+                    });
+                }
+            });
+        }
+
+        async Task DeleteWalletID()
+        {
+            await DeleteWalletIDCalculation();
+        }
+
+        private Task DeleteWalletIDCalculation()
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    DeleteMiningSettings();
+                    AccountSettings.WalletCustomIDs.Remove(RemoveComboBoxIDs.Text);
+                    AccountSettings.ComboBoxIDs.ItemsSource = AccountSettings.WalletCustomIDs;
+                }
+                catch (Exception)
+                {
+                    dispatcherTimer.Stop();
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        ProgressDialog.IsOpen = false;
+                        RemoveWalletIDInfo.IsOpen = true;
+                        RemoveWalletIDInfoTitle.Text = "Server-side Issue";
+                        RemoveWalletIDInfo1.Text = "Please try again later.";
+                        RemoveWalletIDInfo2.Opacity = 0;
+                    });
+                }
+            });
+        }
+
         private void btnForceSignup_Click(object sender, RoutedEventArgs e)
         {
             ButtonAutomationPeer peer = new ButtonAutomationPeer(AccountSettings.SignupButton);
@@ -1410,6 +1640,20 @@ namespace CryptoPocket
             invokeProv.Invoke();
         }
 
+        private void btnForceSaveWallet_Click(object sender, RoutedEventArgs e)
+        {
+            ButtonAutomationPeer peer = new ButtonAutomationPeer(AccountSettings.btnSaveWalletID);
+            IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+            invokeProv.Invoke();
+        }
+
+        private void btnForceRemoveWallet_Click(object sender, RoutedEventArgs e)
+        {
+            ButtonAutomationPeer peer = new ButtonAutomationPeer(AccountSettings.btnRemoveWalletID);
+            IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+            invokeProv.Invoke();
+        }
+
         private void ResetInputs(object sender, DialogClosingEventArgs eventArgs)
         {
             LoginUsername.Text = "";
@@ -1418,6 +1662,10 @@ namespace CryptoPocket
             txtSignupEmail.Text = "";
             txtSignupUsername.Text = "";
             txtSignupPassword.Password = "";
+
+            CustomID.Text = "";
+            WalletAddress.Text = "";
+            RemoveComboBoxIDs.Text = "";
         }
 
         private void btnInfo_Click(object sender, RoutedEventArgs e)
@@ -1439,7 +1687,23 @@ namespace CryptoPocket
                 LoginInfoTitle.Text = "Login Info";
                 LoginInfo1.Text = "Username cannot be longer than 20 characters.";
                 LoginInfo2.Opacity = 100;
-                LoginInfo2.Text = "Passwords must be at least 8 characters.";
+            }
+            else if (Button.Name == "SaveWalletIDInfoButton")
+            {
+                SaveWalletID.IsOpen = false;
+                SaveWalletIDInfo.IsOpen = true;
+                SaveWalletIDInfoTitle.Text = "Save Wallet ID Form Info";
+                SaveWalletIDInfo1.Text = "Wallet ID and Wallet Address fields cannot be empty.";
+                SaveWalletIDInfo2.Opacity = 100;
+                SaveWalletIDInfo3.Opacity = 100;
+            }
+            else if (Button.Name == "RemoveWalletIDInfoButton")
+            {
+                RemoveWalletID.IsOpen = false;
+                RemoveWalletIDInfo.IsOpen = true;
+                RemoveWalletIDInfoTitle.Text = "Remove Wallet ID Form Info";
+                RemoveWalletIDInfo1.Text = "Wallet ID field cannot be empty.";
+                RemoveWalletIDInfo2.Opacity = 100;
             }
         }
     }
