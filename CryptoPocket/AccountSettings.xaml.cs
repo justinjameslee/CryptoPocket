@@ -19,6 +19,7 @@ using System.Windows.Media.Animation;
 using MaterialDesignThemes.Wpf;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
+using System.Text.RegularExpressions;
 
 namespace CryptoPocket
 {
@@ -33,7 +34,7 @@ namespace CryptoPocket
             string DatabaseConnectionString = Properties.Settings.Default.ConnectionString;
             connection = new MySqlConnection(DatabaseConnectionString);
         }
-        
+
         public static string BaseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         string FileLocation = System.IO.Path.Combine(BaseDir, "CryptoPocket.exe");
 
@@ -51,7 +52,7 @@ namespace CryptoPocket
         public static string FreeMembership = "Free";
         public static string ElectricitiyRate;
         //Create a list to store the result
-        
+
         public List<string> ID_ELEC = new List<string>();
         public List<string> ELECTRICITYRATE = new List<string>();
 
@@ -63,7 +64,9 @@ namespace CryptoPocket
         SolidColorBrush BrushRed = new SolidColorBrush(Colors.Red);
         Color CaretColor = (Color)ColorConverter.ConvertFromString("#FFFFC107");
         Color BorderColor = (Color)ColorConverter.ConvertFromString("#89000000");
-        
+
+        private static readonly Regex NumericalInput = new Regex("[^0-9.]+");
+
 
         public string GenerateSHA256Hash(string input, string salt)
         {
@@ -130,7 +133,7 @@ namespace CryptoPocket
             }
         }
 
-        
+
 
         public ICommand ToggleBaseCommand { get; } = new AnotherCommandImplementation(o => ApplyBase((bool)o));
 
@@ -159,7 +162,7 @@ namespace CryptoPocket
             }
         }
 
-        
+
 
         private void OnTopChecked(object sender, RoutedEventArgs e)
         {
@@ -202,7 +205,7 @@ namespace CryptoPocket
 
         private void AccountSettings_Loaded(object sender, RoutedEventArgs e)
         {
-            
+
         }
 
         private void SignupButton_Click(object sender, RoutedEventArgs e)
@@ -240,10 +243,36 @@ namespace CryptoPocket
 
         private void btnElectricityRate_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (MainWindow.LoggedIn == true)
+            try
             {
-                ElectricitiyRate = txtElectricityRate.Text;
-                UpdateElectricity();
+                if (Convert.ToDecimal(txtElectricityRate.Text) >= 1)
+                {
+                    if(MainWindow.LoggedIn == true)
+                    {
+                        txtElectricityRate.Text = ElectricitiyRate;
+                    }
+                    else
+                    {
+                        txtElectricityRate.Text = "0.10";
+                        ElectricitiyRate = "0.10";
+                    }
+                }
+                else if (Convert.ToDecimal(txtElectricityRate.Text) < 1 && MainWindow.LoggedIn == true)
+                {
+                    UpdateElectricity();
+                }
+            }
+            catch (Exception)
+            {
+                if (MainWindow.LoggedIn == true)
+                {
+                    txtElectricityRate.Text = ElectricitiyRate;
+                }
+                else
+                {
+                    txtElectricityRate.Text = "0.10";
+                    ElectricitiyRate = "0.10";
+                }
             }
         }
 
@@ -263,6 +292,16 @@ namespace CryptoPocket
             {
                 mw.RemoveWalletID.IsOpen = true;
             }
+        }
+
+        private void Electricity_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !IsTextAllowed(e.Text);
+        }
+
+        private static bool IsTextAllowed(string text)
+        {
+            return !NumericalInput.IsMatch(text);
         }
     }
 }

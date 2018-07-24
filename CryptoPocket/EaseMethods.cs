@@ -12,6 +12,20 @@ namespace CryptoPocket
     {
         public static string jsonString;
 
+        public static string KeepOnlyNumbers(string value)
+        {
+            var allowedChars = "01234567890";
+            try
+            {
+                return new string(value.Where(c => allowedChars.Contains(c)).ToArray());
+            }
+            catch (Exception)
+            {
+                return value;
+            }
+
+        }
+
         public static string RemoveExtraText(string value)
         {
             var allowedChars = "01234567890.,-";

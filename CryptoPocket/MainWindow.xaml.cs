@@ -127,10 +127,11 @@ namespace CryptoPocket
 
         DispatcherTimer dispatcherTimer = new DispatcherTimer();
 
-        public static bool SigningUp;
-        public static bool LoggingIn;
-        public static bool SavingWalletID;
-        public static bool RemovingWalletID;
+        public static bool SigningUp = false;
+        public static bool LoggingIn = false;
+        public static bool SavingWalletID = false;
+        public static bool RemovingWalletID = false;
+        public static bool AddWorkerBool = false;
 
         public static string strLoginEmail;
         public static string strLoginUsername;
@@ -159,6 +160,8 @@ namespace CryptoPocket
         public List<string> ID_CC = new List<string>();
         public List<string> C_COIN = new List<string>();
         public List<string> C_CURRENCY = new List<string>();
+
+        private static readonly Regex NumericalInput = new Regex("[^0-9]+");
 
         public ObservableCollection<string> WalletCustomIDs { get; set; }
 
@@ -1193,6 +1196,15 @@ namespace CryptoPocket
             ProgressDialog.IsOpen = true;
         }
 
+        private void btnAddWorker_Click(object sender, RoutedEventArgs e)
+        {
+            AddWorkerBool = true;
+
+            AddWorker.IsOpen = false;
+
+            ProgressDialog.IsOpen = true;
+        }
+
         private void ProgressDialog_Loaded(object sender, DialogOpenedEventArgs eventArgs)
         {
             //Signing Up Calculation Pt.1
@@ -1386,6 +1398,11 @@ namespace CryptoPocket
                     RemoveWalletIDInfo1.Text = "Wallet ID field cannot be empty.";
                     RemoveWalletIDInfo2.Opacity = 100;
                 }
+            }
+
+            else if (AddWorkerBool == true)
+            {
+                
             }
         }
 
@@ -1894,6 +1911,27 @@ namespace CryptoPocket
             {
 
             }
+        }
+
+        private static bool IsTextAllowed(string text)
+        {
+            return !NumericalInput.IsMatch(text);
+        }
+
+        private void NumbersOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !IsTextAllowed(e.Text);
+        }
+
+        private void AddWorkerElectricity_LostFocus(object sender, RoutedEventArgs e)
+        {
+            AddWorkerElectricity.Text = EaseMethods.KeepOnlyNumbers(AddWorkerElectricity.Text);
+            AddWorkerElectricity.Text = AddWorkerElectricity.Text + " Watts";
+        }
+
+        private void AddWorkerElectricity_GotFocus(object sender, RoutedEventArgs e)
+        {
+            AddWorkerElectricity.Text = EaseMethods.KeepOnlyNumbers(AddWorkerElectricity.Text);
         }
     }
 }

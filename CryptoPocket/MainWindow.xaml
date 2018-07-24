@@ -616,9 +616,14 @@
                     <TextBlock Text="Mining Portfolio" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Margin="16,16,16,6"/>
                     <TextBlock Text="Add Worker" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="16,0,16,6"/>
                     <StackPanel Orientation="Vertical" Width="250">
+                        <TextBox
+                            x:Name="AddWorkerNameCustomID"
+                            Margin="6,6,6,6" Width="Auto"
+                            materialDesign:HintAssist.Hint="Custom Worker ID"
+                            Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
                         <ComboBox
                             Margin="6,6,6,6" Width="Auto"
-                            x:Name= "MiningAddPoolComboBox"
+                            x:Name= "AddWorkerPool"
                             materialDesign:HintAssist.Hint="Worker Pool"
                             MinWidth="72" Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                             VerticalAlignment="Bottom" IsEditable="True" Text="{Binding SelectedTextTwo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
@@ -627,11 +632,15 @@
                                     <VirtualizingStackPanel />
                                 </ItemsPanelTemplate>
                             </ComboBox.ItemsPanel>
+                            <ListBoxItem Content="NiceHash"/>
+                            <ListBoxItem Content="ZPool"/>
+                            <ListBoxItem Content="SiaMining"/>
                         </ComboBox>
                         <ComboBox
                             Margin="6,6,6,6" Width="Auto"
-                            x:Name= "MiningAddWalletComboBox"
-                            materialDesign:HintAssist.Hint="Pool Wallet Address"
+                            x:Name= "AddWorkerWalletCustomID"
+                            materialDesign:HintAssist.Hint="Wallet ID"
+                            ItemsSource="{Binding Path=WalletCustomIDs}"
                             MinWidth="72" Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                             VerticalAlignment="Bottom" IsEditable="True" Text="{Binding SelectedTextTwo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                             <ComboBox.ItemsPanel>
@@ -642,7 +651,7 @@
                         </ComboBox>
                         <ComboBox
                             Margin="6,6,6,6" Width="Auto"
-                            x:Name= "MiningAddWorkerComboBox"
+                            x:Name= "AddWorkerName"
                             materialDesign:HintAssist.Hint="Worker Name"
                             MinWidth="72" Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                             VerticalAlignment="Bottom" IsEditable="True" Text="{Binding SelectedTextTwo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
@@ -652,12 +661,17 @@
                                 </ItemsPanelTemplate>
                             </ComboBox.ItemsPanel>
                         </ComboBox>
+                        <TextBox
+                            x:Name="AddWorkerElectricity" Width="Auto"
+                            materialDesign:HintAssist.Hint="Power Consumption"
+                            Style="{StaticResource MaterialDesignFloatingHintTextBox}" VerticalAlignment="Bottom" Margin="6" PreviewTextInput="NumbersOnly_PreviewTextInput" LostFocus="AddWorkerElectricity_LostFocus" GotFocus="AddWorkerElectricity_GotFocus">
+                        </TextBox>
                     </StackPanel>
                     <Grid>
                         <Button
                             Style="{StaticResource MaterialDesignFlatButton}"
                             IsDefault="True"
-                            Command="materialDesign:DialogHost.CloseDialogCommand" Click="btnMiningAddWorker_Click" HorizontalAlignment="Center" Margin="6,6,0,0" Content="ACCEPT">
+                            Command="materialDesign:DialogHost.CloseDialogCommand" Click="btnAddWorker_Click" HorizontalAlignment="Center" Margin="6,6,0,0" Content="ACCEPT">
                             <Button.CommandParameter>
                                 <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">True</system:Boolean>
                             </Button.CommandParameter>

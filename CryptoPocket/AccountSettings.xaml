@@ -143,7 +143,7 @@
                                     <TextBox
                                         x:Name="txtElectricityRate"
                                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                        Text="0.1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,5,0,0" LostFocus="btnElectricityRate_LostFocus" MaxLength="4">
+                                        Text="0.1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,5,0,0" LostFocus="btnElectricityRate_LostFocus" MaxLength="4" PreviewTextInput="Electricity_PreviewTextInput">
                                         <materialDesign:HintAssist.Hint>
                                             <StackPanel
                                                 Orientation="Horizontal"
