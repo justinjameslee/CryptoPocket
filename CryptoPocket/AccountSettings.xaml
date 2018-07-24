@@ -22,29 +22,30 @@
                 <StackPanel>
                     <TextBlock x:Name="SettingsUsername" FontSize="18" Margin="0,12,0,0">Guest</TextBlock>
                     <Separator Margin="0,2,0,2"/>
-                    <TextBlock x:Name="SettingsMembership" Margin="0,3,0,0">Membership: Free</TextBlock>
+                    <TextBlock x:Name="SettingsMembership" Margin="0,5,0,0">Membership: Free</TextBlock>
                     <TextBlock x:Name="SettingsEmail" Margin="0,3,0,0">Email: N/A</TextBlock>
                     <TextBlock x:Name="SettingsDevices" Margin="0,3,0,0">Connected Devices: N/A</TextBlock>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Width="Auto" Height="Auto" Margin="0,3,5,0">
                     <Button
-                            x:Name="LoginEditButton"
-						    Background="White" BorderBrush="White"
-						    Style="{StaticResource MaterialDesignFlatButton}"
-						    ToolTip="Login" HorizontalAlignment="Left"
-                            materialDesign:ShadowAssist.ShadowDepth="Depth2" VerticalAlignment="Top" Opacity="100" Width="Auto" Height="Auto" Click="EditUser_Click" Margin="5,1,5,5" Padding="7,4">
+                        Background="{DynamicResource background}"
+                        x:Name="LoginEditButton"
+                        Style="{StaticResource MaterialDesignFlatButton}"
+                        ToolTip="Login" HorizontalAlignment="Left"
+                        materialDesign:ShadowAssist.ShadowDepth="Depth2" VerticalAlignment="Top" Opacity="100" Width="Auto" Height="Auto" Click="EditUser_Click" Margin="5,1,5,5" Padding="7,4">
                         <Grid>
                             <TextBlock 
+                                Foreground="{DynamicResource txtColor}"
                                 x:Name="LoginText"
                                 Text="LOGIN" Grid.Column="1"
                                 HorizontalAlignment="Right" VerticalAlignment="Center" 
-                                FontSize="9" Margin="0,0,20,0" Foreground="Black"/>
-                            <materialDesign:PackIcon x:Name="LoginIcon" Kind="Login" Height="13" Width="13" Foreground="Black" Margin="2,2,2,2" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                FontSize="11" Margin="0,0,22,0"/>
+                            <materialDesign:PackIcon x:Name="LoginIcon" Kind="Login" Height="15" Width="15" Foreground="{DynamicResource txtColor}" Margin="2,2,2,2" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                         </Grid>
                     </Button>
                     <Button
                             x:Name="SignupButton"
-                            Background="White" BorderBrush="White"
+                            Background="{DynamicResource background}"
                             Style="{StaticResource MaterialDesignFlatButton}"
                             ToolTip="Signup" HorizontalAlignment="Right"  Margin="5,1,5,5"
                             materialDesign:ShadowAssist.ShadowDepth="Depth2" Width="Auto" Height="Auto" Opacity="100" Click="SignupButton_Click" Padding="7,4">
@@ -52,8 +53,8 @@
                             <TextBlock 
                                 x:Name="HeaderUser" Text="SIGNUP" Grid.Column="1"
                                 HorizontalAlignment="Right" VerticalAlignment="Center" 
-                                FontSize="9" Margin="0,0,20,0" Foreground="Black"/>
-                            <materialDesign:PackIcon Kind="AccountPlus" Height="13" Width="13" Foreground="Black" Margin="2,2,2,2" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                FontSize="11" Margin="0,0,22,0" Foreground="{DynamicResource txtColor}"/>
+                            <materialDesign:PackIcon Kind="AccountPlus" Height="15" Width="15" Foreground="{DynamicResource txtColor}" Margin="2,2,2,2" HorizontalAlignment="Right" VerticalAlignment="Center" />
                         </Grid>
                         
                     </Button>

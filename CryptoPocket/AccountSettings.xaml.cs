@@ -143,7 +143,6 @@ namespace CryptoPocket
         {
             if (Theme == false)
             {
-                mw.Background = new SolidColorBrush(Colors.Gray);
                 Application.Current.Resources["txtColor"] = new SolidColorBrush(Colors.White);
                 Application.Current.Resources["txtBlack"] = new SolidColorBrush(Colors.Black);
                 Application.Current.Resources["bgColor"] = new SolidColorBrush(Colors.Gray);
@@ -152,7 +151,6 @@ namespace CryptoPocket
             }
             else if (Theme == true)
             {
-                mw.Background = new SolidColorBrush(Colors.WhiteSmoke);
                 Application.Current.Resources["txtColor"] = new SolidColorBrush(Colors.Black);
                 Application.Current.Resources["txtBlack"] = new SolidColorBrush(Colors.Black);
                 Application.Current.Resources["bgColor"] = new SolidColorBrush(Colors.White);

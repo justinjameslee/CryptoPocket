@@ -1687,18 +1687,19 @@ namespace CryptoPocket
                 try
                 {
                     DeleteCustomCoins();
-                    for (int x = 0; x < SessionCustomCoins.Count; x++)
-                    {
-                        string coin = SessionCustomCoins[x];
-                        string Currency = SessionCustomCoinsCurrency[x];
-                        InsertCustomCoins(coin, Currency);
-                    }
-                    CoinBox.Items.Clear();
-                    SessionCustomCoins.Clear();
-                    SessionCustomCoinsCurrency.Clear();
 
                     this.Dispatcher.Invoke(() =>
                     {
+                        for (int x = 0; x < SessionCustomCoins.Count; x++)
+                        {
+                            string coin = SessionCustomCoins[x];
+                            string Currency = SessionCustomCoinsCurrency[x];
+                            InsertCustomCoins(coin, Currency);
+                        }
+                        CoinBox.Items.Clear();
+                        SessionCustomCoins.Clear();
+                        SessionCustomCoinsCurrency.Clear();
+
                         AccountSettings.ComboBoxIDs.ItemsSource = null;
 
                         AccountSettings.LoginIcon.Kind = PackIconKind.Login;
@@ -1712,9 +1713,11 @@ namespace CryptoPocket
                         AccountSettings.SettingsDevices.Text = "Connected Devices: N/A";
                         AccountSettings.txtElectricityRate.Text = "0.1";
                         AccountSettings.ElectricitiyRate = "0.1";
-                        CurrentID = 0;
-                        LoggedIn = false;
+                        
                     });
+
+                    CurrentID = 0;
+                    LoggedIn = false;
                 }
                 catch (Exception)
                 {
@@ -1873,6 +1876,23 @@ namespace CryptoPocket
                 RemoveWalletIDInfoTitle.Text = "Remove Wallet ID Form Info";
                 RemoveWalletIDInfo1.Text = "Wallet ID field cannot be empty.";
                 RemoveWalletIDInfo2.Opacity = 100;
+            }
+        }
+
+        private void btnWorker_Click(object sender, RoutedEventArgs e)
+        {
+            var Button = (Button)sender;
+            if (Button.Name == "AddWorkerButton")
+            {
+                AddWorker.IsOpen = true;
+            }
+            else if (Button.Name == "RemoveWorkerButton")
+            {
+
+            }
+            else if (Button.Name == "")
+            {
+
             }
         }
     }
