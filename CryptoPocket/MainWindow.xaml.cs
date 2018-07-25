@@ -132,6 +132,7 @@ namespace CryptoPocket
         public static bool SavingWalletID = false;
         public static bool RemovingWalletID = false;
         public static bool AddWorkerBool = false;
+        public static bool RemoveWorkerBool = false;
 
         public static string strLoginEmail;
         public static string strLoginUsername;
@@ -144,6 +145,12 @@ namespace CryptoPocket
         public static string SaveCustomID;
         public static string SaveWalletAddress;
         public static string RemoveCustomID;
+
+        public static string strAddWorkerNameID;
+        public static string strAddWorkerPool;
+        public static string strAddWorkerWalletID;
+        public static string strAddWorkerWalletAddress;
+        public static string strAddWorkerElectricity;
 
         public bool SettingsActive;
 
@@ -164,6 +171,8 @@ namespace CryptoPocket
         private static readonly Regex NumericalInput = new Regex("[^0-9]+");
 
         public ObservableCollection<string> WalletCustomIDs { get; set; }
+        public ObservableCollection<string> WalletCustomAddresses { get; set; }
+        public ObservableCollection<string> WorkerCustomIDs { get; set; }
 
         public MainWindow()
         {
@@ -181,6 +190,8 @@ namespace CryptoPocket
             connection = new MySqlConnection(DatabaseConnectionString);
 
             WalletCustomIDs = new ObservableCollection<string>();
+            WalletCustomAddresses = new ObservableCollection<string>();
+            WorkerCustomIDs = new ObservableCollection<string>();
 
         }
 
@@ -1058,9 +1069,10 @@ namespace CryptoPocket
 
         public ObservableCollection<string> SelectMiningSettingsForUser(ObservableCollection<string> Ref)
         {
-            string query = "SELECT * FROM CryptoMiningSettings WHERE ID='" + MainWindow.CurrentID + "'";
+            string query = "SELECT * FROM CryptoMiningSettings WHERE ID='" + CurrentID + "'";
 
             WalletCustomIDs.Clear();
+            WalletCustomAddresses.Clear();
 
             if (this.OpenConnection() == true)
             {
@@ -1070,6 +1082,7 @@ namespace CryptoPocket
                 while (dataReader.Read())
                 {
                     WalletCustomIDs.Add(dataReader["CUSTOMID"] + "");
+                    WalletCustomAddresses.Add(dataReader["WALLET"] + "");
                 }
 
                 dataReader.Close();
@@ -1199,8 +1212,19 @@ namespace CryptoPocket
         private void btnAddWorker_Click(object sender, RoutedEventArgs e)
         {
             AddWorkerBool = true;
+            RemoveWorkerBool = false;
 
             AddWorker.IsOpen = false;
+
+            ProgressDialog.IsOpen = true;
+        }
+
+        private void btnRemoveWorker_Click(object sender, RoutedEventArgs e)
+        {
+            AddWorkerBool = false;
+            RemoveWorkerBool = true;
+
+            RemoveWorker.IsOpen = false;
 
             ProgressDialog.IsOpen = true;
         }
@@ -1390,7 +1414,7 @@ namespace CryptoPocket
 
                     DeleteWalletID();
                 }
-                else if (LoggedIn == false)
+                else
                 {
                     ProgressDialog.IsOpen = false;
                     RemoveWalletIDInfo.IsOpen = true;
@@ -1402,7 +1426,26 @@ namespace CryptoPocket
 
             else if (AddWorkerBool == true)
             {
-                
+                AddWorkerBool = false;
+
+                if (LoggedIn == true && AddWorkerNameCustomID.Text.Length != 0 && AddWorkerPool.Text.Length != 0 && AddWorkerWalletCustomID.Text.Length != 0 && AddWorkerElectricity.Text.Length != 0)
+                {
+                    strAddWorkerNameID = AddWorkerNameCustomID.Text;
+                    strAddWorkerPool = AddWorkerPool.Text;
+                    strAddWorkerWalletID = AddWorkerWalletCustomID.Text;
+                    strAddWorkerElectricity = AddWorkerElectricity.Text;
+
+
+                }
+                else
+                {
+
+                }
+            }
+
+            else if (RemoveWorkerBool == true)
+            {
+                RemoveWorkerBool = false;
             }
         }
 
@@ -1905,7 +1948,7 @@ namespace CryptoPocket
             }
             else if (Button.Name == "RemoveWorkerButton")
             {
-
+                RemoveWorker.IsOpen = true;
             }
             else if (Button.Name == "")
             {
@@ -1932,6 +1975,53 @@ namespace CryptoPocket
         private void AddWorkerElectricity_GotFocus(object sender, RoutedEventArgs e)
         {
             AddWorkerElectricity.Text = EaseMethods.KeepOnlyNumbers(AddWorkerElectricity.Text);
+        }
+
+        private void AddWorkerWallet_LostFocus(object sender, RoutedEventArgs e)
+        {
+            strAddWorkerWalletID = AddWorkerWalletCustomID.Text;
+            int Index = SelectMiningSettingsForUser(WalletCustomIDs).IndexOf(strAddWorkerWalletID);
+            strAddWorkerWalletAddress = WalletCustomAddresses.ElementAt(Index);
+            strAddWorkerPool = AddWorkerPool.Text;
+
+            if(strAddWorkerPool == "NiceHash")
+            {
+                string url = @"https://api.nicehash.com/api?method=stats.provider.workers&addr=" + strAddWorkerWalletAddress;
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
+                request.AutomaticDecompression = DecompressionMethods.GZip;
+
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    initialCustomCoin = reader.ReadToEnd();
+                    relevantCustomCoin = References.EaseMethods.getBetween(initialCustomCoin, "\"USD\": {", "\"last_updated\"");
+                    CustomCoinA = Regex.Split(relevantCustomCoin, "},");
+                    SepCustomCoinA = CustomCoinA.OfType<string>().ToList();
+                    for (int xx = 0; xx < SepCustomCoinA.Count; xx++)
+                    {
+                        initialCoinB = SepCustomCoinA[xx];
+                        CustomPrice = References.EaseMethods.getBetween(initialCoinB, "price\": ", ",");
+                        CustomChange24 = References.EaseMethods.getBetween(initialCoinB, "percent_change_24h\": ", ",");
+                        CustomChange7 = EaseMethods.RemoveKeepingColumnAndDots(initialCoinB);
+                        RegexSplitChange7 = Regex.Split(CustomChange7, ":");
+                        CustomChange7 = RegexSplitChange7.Last();
+                        CustomCoinPrice.Add(CustomPrice);
+                        CustomCoin24.Add(CustomChange24);
+                        CustomCoin7.Add(CustomChange7);
+                    }
+                }
+            }
+            else if(strAddWorkerPool == "ZPool")
+            {
+
+            }
+            else if(strAddWorkerPool == "SiaMining")
+            {
+
+            }
         }
     }
 }
