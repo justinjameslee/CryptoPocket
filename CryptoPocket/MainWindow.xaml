@@ -418,6 +418,26 @@
                 </StackPanel>
             </materialDesign:DialogHost.DialogContent>
         </materialDesign:DialogHost>
+        
+        <materialDesign:DialogHost x:Name="AddWorkerInfo" Panel.ZIndex="2" CloseOnClickAway="True">
+            <materialDesign:DialogHost.DialogContent>
+                <StackPanel Margin="16" Width="Auto">
+                    <TextBlock x:Name="AddWorkerInfoTitle" Text="Add Worker Form Info" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Margin="16,16,16,6"/>
+                    <TextBlock x:Name="AddWorkerInfo1" Opacity="100" Text="All fields must be filled in." HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="16,0,16,6"/>
+                    <TextBlock x:Name="AddWorkerInfo2" Opacity="100" Text="Power consumption only accepts numbers." HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="16,0,16,6"/>
+                    <Grid>
+                        <Button
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            IsDefault="True"
+                            Command="materialDesign:DialogHost.CloseDialogCommand"  HorizontalAlignment="Center" Margin="6,6,0,0" Content="ADD WORKER FORM"  VerticalAlignment="Center" Click="btnForceAddWorker_Click">
+                            <Button.CommandParameter>
+                                <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">True</system:Boolean>
+                            </Button.CommandParameter>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </materialDesign:DialogHost.DialogContent>
+        </materialDesign:DialogHost>
 
         <materialDesign:DialogHost x:Name="Login" Panel.ZIndex="2" CloseOnClickAway="True" DialogClosing="ResetInputs">
             <materialDesign:DialogHost.DialogContent>
@@ -642,7 +662,7 @@
                             materialDesign:HintAssist.Hint="Wallet ID"
                             ItemsSource="{Binding Path=WalletCustomIDs}"
                             MinWidth="72" Style="{StaticResource MaterialDesignFloatingHintComboBox}"
-                            VerticalAlignment="Bottom" IsEditable="True" Text="{Binding SelectedTextTwo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" LostFocus="AddWorkerWallet_LostFocus">
+                            VerticalAlignment="Bottom" IsEditable="True" Text="{Binding SelectedTextTwo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                             <ComboBox.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <VirtualizingStackPanel />
@@ -654,7 +674,7 @@
                             x:Name= "AddWorkerName"
                             materialDesign:HintAssist.Hint="Worker Name"
                             MinWidth="72" Style="{StaticResource MaterialDesignFloatingHintComboBox}"
-                            VerticalAlignment="Bottom" IsEditable="True" Text="{Binding SelectedTextTwo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            VerticalAlignment="Bottom" IsEditable="True" Text="{Binding SelectedTextTwo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" GotFocus="AddWorkerName_GotFocus">
                             <ComboBox.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <VirtualizingStackPanel />
@@ -1310,6 +1330,7 @@
 														Margin="6" Width="Auto"
 														x:Name= "WorkerComboBox"
 														materialDesign:HintAssist.Hint="Worker"
+                                                        ItemsSource="{Binding Path=WorkerCustomList}"
 														MinWidth="72" Style="{StaticResource MaterialDesignFloatingHintComboBox}"
 														VerticalAlignment="Bottom" IsEditable="True" Text="{Binding SelectedTextTwo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                                         <ComboBox.ItemsPanel>

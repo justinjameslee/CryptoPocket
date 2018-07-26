@@ -161,6 +161,7 @@ namespace CryptoPocket
         public static string strAddWorkerWalletID;
         public static string strAddWorkerWalletAddress;
         public static string strAddWorkerElectricity;
+        public static string strAddWorkerName;
 
         public bool SettingsActive;
 
@@ -183,7 +184,7 @@ namespace CryptoPocket
         public ObservableCollection<string> WalletCustomIDs { get; set; }
         public ObservableCollection<string> WalletCustomAddresses { get; set; }
         public ObservableCollection<string> WorkerList { get; set; }
-
+        public ObservableCollection<string> WorkerCustomList { get; set; }
 
 
 
@@ -205,6 +206,7 @@ namespace CryptoPocket
             WalletCustomIDs = new ObservableCollection<string>();
             WalletCustomAddresses = new ObservableCollection<string>();
             WorkerList = new ObservableCollection<string>();
+            WorkerCustomList = new ObservableCollection<string>();
 
         }
 
@@ -1032,7 +1034,40 @@ namespace CryptoPocket
                             ProgressDialog.IsOpen = false;
                             SaveWalletIDInfo.IsOpen = true;
                         });
-                        
+
+                    }
+                }
+            });
+        }
+
+        private Task InsertWorker()
+        {
+            return Task.Run(() =>
+            {
+                string query = "INSERT INTO CryptoWorkers (ID, CUSTOMID, WALLETID, WORKER, POWER) VALUES('" + CurrentID + "', '" + strAddWorkerNameID + "', '" + strAddWorkerWalletID + "', '" + strAddWorkerName + "', '" + strAddWorkerElectricity + "')";
+
+                if (OpenConnection() == true)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand(query, connection);
+                        cmd.ExecuteNonQuery();
+                        this.CloseConnection();
+
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            WorkerCustomList.Add(strAddWorkerNameID);
+                            WorkerComboBox.ItemsSource = WorkerCustomList;
+                        });
+                    }
+                    catch (Exception)
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            ProgressDialog.IsOpen = false;
+                            AddWorkerInfo.IsOpen = true;
+                        });
+
                     }
                 }
             });
@@ -1281,7 +1316,7 @@ namespace CryptoPocket
                 else
                 {
                     dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
-                    dispatcherTimer.Interval = new TimeSpan(0, 0, 10);
+                    dispatcherTimer.Interval = new TimeSpan(0, 0, 20);
                     dispatcherTimer.Start();
 
                     salt = CreateSalt(10);
@@ -1362,7 +1397,8 @@ namespace CryptoPocket
 
             //Logging Out Calculation Pt.1
 
-            else if (LoggedIn == true && SigningUp == false && LoggingIn == false && SavingWalletID == false && RemovingWalletID == false)
+            else if (LoggedIn == true && SigningUp == false && LoggingIn == false && SavingWalletID == false 
+                && RemovingWalletID == false && AddWorkerBool == false && RemoveWorkerBool == false)
             {
                 dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
                 dispatcherTimer.Interval = new TimeSpan(0, 0, 3);
@@ -1441,18 +1477,29 @@ namespace CryptoPocket
             {
                 AddWorkerBool = false;
 
-                if (LoggedIn == true && AddWorkerNameCustomID.Text.Length != 0 && AddWorkerPool.Text.Length != 0 && AddWorkerWalletCustomID.Text.Length != 0 && AddWorkerElectricity.Text.Length != 0)
+                if (LoggedIn == true && AddWorkerNameCustomID.Text.Length != 0 && AddWorkerPool.Text.Length != 0 && AddWorkerWalletCustomID.Text.Length != 0 && AddWorkerName.Text.Length != 0 && AddWorkerElectricity.Text.Length != 0)
                 {
+                    dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
+                    dispatcherTimer.Interval = new TimeSpan(0, 0, 8);
+                    dispatcherTimer.Start();
+
                     strAddWorkerNameID = AddWorkerNameCustomID.Text;
                     strAddWorkerPool = AddWorkerPool.Text;
                     strAddWorkerWalletID = AddWorkerWalletCustomID.Text;
+                    strAddWorkerName = AddWorkerName.Text;
                     strAddWorkerElectricity = AddWorkerElectricity.Text;
+                    
+                    strAddWorkerElectricity = EaseMethods.KeepOnlyNumbers(strAddWorkerElectricity);
 
-
+                    AddWorkerTask();
                 }
                 else
                 {
-
+                    ProgressDialog.IsOpen = false;
+                    AddWorkerInfo.IsOpen = true;
+                    RemoveWalletIDInfoTitle.Text = "Add Worker Form Info";
+                    RemoveWalletIDInfo1.Text = "All fields must be filled in.";
+                    RemoveWalletIDInfo2.Opacity = 100;
                 }
             }
 
@@ -1742,8 +1789,21 @@ namespace CryptoPocket
 
                     this.Dispatcher.Invoke(() =>
                     {
-                        CoinBox.Items.Add(new CustomCoinBox() { CustomCoinName = CustomCoin, CustomCoinFontSize = FontSize, ValueUSD = CustomCoinPrice[0], ValueBTC = CustomCoinPrice[1], PortfolioQuan = "N/A", PortfolioValue = "N/A",
-                            Change24Hour = CustomCoin24[Currency], Change7Day = CustomCoin7[Currency], OverallTrend = Change7, Trend24 = Change24, Trend7 = Change7, Currency = Currency });
+                        CoinBox.Items.Add(new CustomCoinBox()
+                        {
+                            CustomCoinName = CustomCoin,
+                            CustomCoinFontSize = FontSize,
+                            ValueUSD = CustomCoinPrice[0],
+                            ValueBTC = CustomCoinPrice[1],
+                            PortfolioQuan = "N/A",
+                            PortfolioValue = "N/A",
+                            Change24Hour = CustomCoin24[Currency],
+                            Change7Day = CustomCoin7[Currency],
+                            OverallTrend = Change7,
+                            Trend24 = Change24,
+                            Trend7 = Change7,
+                            Currency = Currency
+                        });
 
                         CoinComboBox.Text = "";
                         ComboCoinPercentage.Text = "";
@@ -1759,7 +1819,7 @@ namespace CryptoPocket
 
         private Task LogoutUserCalculation()
         {
-            return Task.Run(() => 
+            return Task.Run(() =>
             {
                 try
                 {
@@ -1877,6 +1937,40 @@ namespace CryptoPocket
             });
         }
 
+        async Task AddWorkerTask()
+        {
+            await AddWorkerTaskCalculation();
+        }
+
+        private Task AddWorkerTaskCalculation()
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        InsertWorker();
+                        AddWorkerNameCustomID.Text = "";
+                        AddWorkerPool.Text = "";
+                        AddWorkerWalletCustomID.Text = "";
+                        AddWorkerName.Text = "";
+                        AddWorkerElectricity.Text = "";
+
+                    });
+                }
+                catch (Exception)
+                {
+                    dispatcherTimer.Stop();
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        ProgressDialog.IsOpen = false;
+
+                    });
+                }
+            });
+        }
+
         private void btnForceSignup_Click(object sender, RoutedEventArgs e)
         {
             ButtonAutomationPeer peer = new ButtonAutomationPeer(AccountSettings.SignupButton);
@@ -1905,6 +1999,13 @@ namespace CryptoPocket
             invokeProv.Invoke();
         }
 
+        private void btnForceAddWorker_Click(object sender, RoutedEventArgs e)
+        {
+            ButtonAutomationPeer peer = new ButtonAutomationPeer(AddWorkerButton);
+            IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+            invokeProv.Invoke();
+        }
+
         private void ResetInputs(object sender, DialogClosingEventArgs eventArgs)
         {
             LoginUsername.Text = "";
@@ -1917,6 +2018,12 @@ namespace CryptoPocket
             CustomID.Text = "";
             WalletAddress.Text = "";
             RemoveComboBoxIDs.Text = "";
+
+            AddWorkerNameCustomID.Text = "";
+            AddWorkerPool.Text = "";
+            AddWorkerWalletCustomID.Text = "";
+            AddWorkerName.Text = "";
+            AddWorkerElectricity.Text = "";
         }
 
         private void btnInfo_Click(object sender, RoutedEventArgs e)
@@ -2009,52 +2116,101 @@ namespace CryptoPocket
                 {
                     if (strAddWorkerPool == "NiceHash")
                     {
-                        WorkerList.Clear();
-
-                        string url = @"https://api.nicehash.com/api?method=stats.provider.workers&addr=" + strAddWorkerWalletAddress;
-
-                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-
-                        request.AutomaticDecompression = DecompressionMethods.GZip;
-
-                        using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                        using (Stream stream = response.GetResponseStream())
-                        using (StreamReader reader = new StreamReader(stream))
+                        try
                         {
-                            initialWorkerInfo = reader.ReadToEnd();
-                            relevantWorkerInfo = References.EaseMethods.getBetween(initialWorkerInfo, "workers\":[", "],\"algo\"");
-                            WorkerInfoA = Regex.Split(relevantWorkerInfo, "],");
-                            SepWorkerInfoA = WorkerInfoA.OfType<string>().ToList();
-                            for (int x = 0; x < SepWorkerInfoA.Count; x++)
-                            {
-                                initialWorker = SepWorkerInfoA[x];
-                                RegexSplitWorkerInfo = Regex.Split(initialWorker, ",");
-                                sessWorkerName = References.EaseMethods.getBetween(RegexSplitWorkerInfo[0], "[\"", "\"");
-                                if (sessWorkerName.Length == 0)
-                                {
-                                    sessWorkerName = "unknown";
-                                }
+                            string url = @"https://api.nicehash.com/api?method=stats.provider.workers&addr=" + strAddWorkerWalletAddress;
 
-                                WorkerList.Add(sessWorkerName);
+                            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
+                            request.AutomaticDecompression = DecompressionMethods.GZip;
+
+                            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                            using (Stream stream = response.GetResponseStream())
+                            using (StreamReader reader = new StreamReader(stream))
+                            {
+                                initialWorkerInfo = reader.ReadToEnd();
+                                if (!initialWorkerInfo.Contains("Incorrect BTC address specified"))
+                                {
+                                    relevantWorkerInfo = References.EaseMethods.getBetween(initialWorkerInfo, "workers\":[", "],\"algo\"");
+                                    WorkerInfoA = Regex.Split(relevantWorkerInfo, "],");
+                                    SepWorkerInfoA = WorkerInfoA.OfType<string>().ToList();
+                                    for (int x = 0; x < SepWorkerInfoA.Count; x++)
+                                    {
+                                        initialWorker = SepWorkerInfoA[x];
+                                        RegexSplitWorkerInfo = Regex.Split(initialWorker, ",");
+                                        sessWorkerName = References.EaseMethods.getBetween(RegexSplitWorkerInfo[0], "[\"", "\"");
+                                        if (sessWorkerName.Length == 0)
+                                        {
+                                            sessWorkerName = "unknown";
+                                        }
+
+                                        WorkerList.Add(sessWorkerName);
+                                    }
+                                }
+                                else
+                                {
+                                    WorkerList.Add("no data found");
+                                }
                             }
+                        }
+                        catch (Exception)
+                        {
+                            WorkerList.Add("no data found");
                         }
 
                         AddWorkerName.ItemsSource = WorkerList;
                     }
-                    else if (strAddWorkerPool == "ZPool")
-                    {
-
-                    }
                     else if (strAddWorkerPool == "SiaMining")
                     {
+                        try
+                        {
+                            string url = @"https://siamining.com/api/v1/addresses/" + strAddWorkerWalletAddress + "/workers";
 
+                            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
+                            request.AutomaticDecompression = DecompressionMethods.GZip;
+
+                            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                            using (Stream stream = response.GetResponseStream())
+                            using (StreamReader reader = new StreamReader(stream))
+                            {
+                                initialWorkerInfo = reader.ReadToEnd();
+                                if (initialWorkerInfo.Contains("\"interval\": 300"))
+                                {
+                                    WorkerInfoA = Regex.Split(initialWorkerInfo, "]\n    },");
+                                    SepWorkerInfoA = WorkerInfoA.OfType<string>().ToList();
+                                    for (int x = 0; x < SepWorkerInfoA.Count; x++)
+                                    {
+                                        initialWorker = SepWorkerInfoA[x];
+                                        RegexSplitWorkerInfo = Regex.Split(initialWorker, ",");
+                                        sessWorkerName = References.EaseMethods.getBetween(RegexSplitWorkerInfo[0], "\"name\": \"", "\"");
+                                        if (sessWorkerName.Length == 0)
+                                        {
+                                            sessWorkerName = "unknown";
+                                        }
+
+                                        WorkerList.Add(sessWorkerName);
+                                    }
+                                }
+                                else
+                                {
+                                    WorkerList.Add("no data found");
+                                }
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            WorkerList.Add("no data found");
+                        }
+
+                        AddWorkerName.ItemsSource = WorkerList;
                     }
                 });
-                
+
             });
         }
 
-        private void AddWorkerWallet_LostFocus(object sender, RoutedEventArgs e)
+        private void AddWorkerName_GotFocus(object sender, RoutedEventArgs e)
         {
             if (AddWorkerWalletCustomID.Text.Length != 0 && LoggedIn == true && AddWorkerPool.Text.Length != 0 && WalletSelected == false)
             {
@@ -2069,12 +2225,24 @@ namespace CryptoPocket
 
                 AddWorkerWalletCustomID.Text = strAddWorkerWalletID;
             }
-            else if (WalletSelected == true && AddWorkerWalletCustomID.Text == strAddWorkerWalletID && LoggedIn == true)
+            else if (WalletSelected == true && LoggedIn == true)
             {
-                WalletSelected = false;
-                WorkerList.Clear();
+                if (AddWorkerWalletCustomID.Text != strAddWorkerWalletID || AddWorkerPool.Text != strAddWorkerPool)
+                {
+                    WorkerList.Clear();
+                    strAddWorkerWalletID = AddWorkerWalletCustomID.Text;
+                    int Index = SelectMiningSettingsForUser(WalletCustomIDs).IndexOf(strAddWorkerWalletID);
+                    strAddWorkerWalletAddress = WalletCustomAddresses.ElementAt(Index);
+                    strAddWorkerPool = AddWorkerPool.Text;
+
+                    LookUpWalletAddress();
+
+                    AddWorkerWalletCustomID.Text = strAddWorkerWalletID;
+                }
+
             }
-            
         }
+
+        
     }
 }
