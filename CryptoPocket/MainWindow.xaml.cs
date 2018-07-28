@@ -179,6 +179,9 @@ namespace CryptoPocket
         public List<string> C_COIN = new List<string>();
         public List<string> C_CURRENCY = new List<string>();
 
+        public List<string> WORKERNAME = new List<string>();
+        public List<string> POWER = new List<string>();
+
         private static readonly Regex NumericalInput = new Regex("[^0-9]+");
 
         public ObservableCollection<string> WalletCustomIDs { get; set; }
@@ -1143,9 +1146,64 @@ namespace CryptoPocket
             }
         }
 
+
+        public ObservableCollection<string> SelectWorkerForUser(ObservableCollection<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoWorkers WHERE ID='" + CurrentID + "'";
+
+            WorkerCustomList.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    WorkerCustomList.Add(dataReader["CUSTOMID"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+
+        public List<string> SelectWorker(List<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoWorkers WHERE ID='" + CurrentID + "'";
+
+            WORKERNAME.Clear();
+            POWER.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    WORKERNAME.Add(dataReader["WORKER"] + "");
+                    POWER.Add(dataReader["POWER"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+
         public List<string> SelectElectricity(List<string> Ref)
         {
-            string query = "SELECT * FROM CryptoElectricity WHERE ID='" + MainWindow.CurrentID + "'";
+            string query = "SELECT * FROM CryptoElectricity WHERE ID='" + CurrentID + "'";
 
             AccountSettings.ID_ELEC.Clear();
             AccountSettings.ELECTRICITYRATE.Clear();
@@ -1497,9 +1555,11 @@ namespace CryptoPocket
                 {
                     ProgressDialog.IsOpen = false;
                     AddWorkerInfo.IsOpen = true;
-                    RemoveWalletIDInfoTitle.Text = "Add Worker Form Info";
-                    RemoveWalletIDInfo1.Text = "All fields must be filled in.";
-                    RemoveWalletIDInfo2.Opacity = 100;
+                    AddWorkerInfoTitle.Text = "Add Worker Form Info";
+                    AddWorkerInfo1.Text = "Power consumption is an optional field.";
+                    AddWorkerInfo2.Opacity = 100;
+                    AddWorkerInfo3.Opacity = 100;
+                    AddWorkerInfo4.Opacity = 100;
                 }
             }
 
@@ -1633,6 +1693,7 @@ namespace CryptoPocket
                         this.Dispatcher.Invoke(() =>
                         {
                             SelectMiningSettingsForUser(WalletCustomIDs);
+                            SelectWorkerForUser(WorkerCustomList);
 
                             AccountSettings.SettingsEmail.Text = "Email: " + Select(EMAIL)[Index];
                             AccountSettings.SettingsUsername.Text = strLoginUsername;
@@ -1643,6 +1704,7 @@ namespace CryptoPocket
                             AccountSettings.txtElectricityRate.Text = AccountSettings.ElectricitiyRate;
 
                             AccountSettings.ComboBoxIDs.ItemsSource = WalletCustomIDs;
+                            WorkerComboBox.ItemsSource = WorkerCustomList;
 
                             LoginUsername.Text = "";
                             LoginPassword.Password = "";
@@ -1838,6 +1900,7 @@ namespace CryptoPocket
                         SessionCustomCoinsCurrency.Clear();
 
                         AccountSettings.ComboBoxIDs.ItemsSource = null;
+                        WorkerComboBox.ItemsSource = null;
 
                         AccountSettings.LoginIcon.Kind = PackIconKind.Login;
                         AccountSettings.LoginEditButton.ToolTip = "Login";
@@ -1965,7 +2028,12 @@ namespace CryptoPocket
                     this.Dispatcher.Invoke(() =>
                     {
                         ProgressDialog.IsOpen = false;
-
+                        AddWorkerInfo.IsOpen = true;
+                        AddWorkerInfoTitle.Text = "Server-side Issue";
+                        AddWorkerInfo1.Text = "Please try again later.";
+                        AddWorkerInfo2.Opacity = 0;
+                        AddWorkerInfo3.Opacity = 0;
+                        AddWorkerInfo4.Opacity = 0;
                     });
                 }
             });
@@ -2006,6 +2074,13 @@ namespace CryptoPocket
             invokeProv.Invoke();
         }
 
+        private void btnForceRemoveWorker_Click(object sender, RoutedEventArgs e)
+        {
+            ButtonAutomationPeer peer = new ButtonAutomationPeer(RemoveWorkerButton);
+            IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+            invokeProv.Invoke();
+        }
+
         private void ResetInputs(object sender, DialogClosingEventArgs eventArgs)
         {
             LoginUsername.Text = "";
@@ -2023,7 +2098,7 @@ namespace CryptoPocket
             AddWorkerPool.Text = "";
             AddWorkerWalletCustomID.Text = "";
             AddWorkerName.Text = "";
-            AddWorkerElectricity.Text = "";
+            AddWorkerElectricity.Text = "(optional) Watts";
         }
 
         private void btnInfo_Click(object sender, RoutedEventArgs e)
@@ -2076,9 +2151,15 @@ namespace CryptoPocket
             {
                 RemoveWorker.IsOpen = true;
             }
-            else if (Button.Name == "")
+            else if (Button.Name == "AddWorkerInfoButton")
             {
-
+                AddWorker.IsOpen = false;
+                AddWorkerInfo.IsOpen = true;
+            }
+            else if (Button.Name == "RemoveWorkerInfoButton")
+            {
+                RemoveWorker.IsOpen = false;
+                RemoveWorkerInfo.IsOpen = true;
             }
         }
 
@@ -2095,7 +2176,14 @@ namespace CryptoPocket
         private void AddWorkerElectricity_LostFocus(object sender, RoutedEventArgs e)
         {
             AddWorkerElectricity.Text = EaseMethods.KeepOnlyNumbers(AddWorkerElectricity.Text);
-            AddWorkerElectricity.Text = AddWorkerElectricity.Text + " Watts";
+            if (AddWorkerElectricity.Text.Length == 0)
+            {
+                AddWorkerElectricity.Text = "(optional) Watts";
+            }
+            else
+            {
+                AddWorkerElectricity.Text = AddWorkerElectricity.Text + " Watts";
+            }
         }
 
         private void AddWorkerElectricity_GotFocus(object sender, RoutedEventArgs e)
@@ -2241,8 +2329,32 @@ namespace CryptoPocket
                 }
 
             }
+            else
+            {
+                WorkerList.Add("no data found");
+                AddWorkerName.ItemsSource = WorkerList;
+            }
         }
 
-        
+        private void WorkerComboBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (WorkerCustomList.Count == 0 || LoggedIn == false)
+            {
+                WorkerCustomList.Add("no data found");
+                WorkerComboBox.ItemsSource = WorkerCustomList;
+            }
+            else
+            {
+                WorkerComboBox.ItemsSource = WorkerCustomList;
+            }
+        }
+
+        private void AddWorkerWalletCustomID_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (WalletCustomIDs.Count == 0)
+            {
+                WalletCustomIDs.Add("no data found");
+            }
+        }
     }
 }
