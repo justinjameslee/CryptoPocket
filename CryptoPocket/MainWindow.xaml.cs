@@ -67,7 +67,7 @@ namespace CryptoPocket
 
         MainWindow mw = (MainWindow)Application.Current.MainWindow;
 
-        private MySqlConnection connection;
+        MySqlConnection connection;
         bool CoinToggled = false;
         bool WorkerToggled = false;
         public bool AlwaysOnTop = false;
@@ -202,9 +202,10 @@ namespace CryptoPocket
             HeaderTabs.SelectedIndex = 0;
 
             //string connectionstring2 = "SERVER=27.121.66.21;DATABASE=goldli00_CryptoPocket;UID=goldli00_admin;PWD=passCrypto123;";
+            string DatabaseConnectionString2 = "server=127.0.0.1;user id=root;persistsecurityinfo=True;database=cryptopocket;PWD=localPassword123";
 
-            string DatabaseConnectionString = Properties.Settings.Default.ConnectionString;
-            connection = new MySqlConnection(DatabaseConnectionString);
+            string DatabaseConnectionString = Properties.Settings.Default.ConnectionStringLocal;
+            connection = new MySqlConnection(DatabaseConnectionString2);
 
             WalletCustomIDs = new ObservableCollection<string>();
             WalletCustomAddresses = new ObservableCollection<string>();
@@ -225,11 +226,9 @@ namespace CryptoPocket
                 connection.Open();
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                DialogHost.CloseDialogCommand.Execute(null, null);
-                mw.ServerError.IsOpen = true;
-
+                Console.WriteLine(e.ToString());
                 return false;
             }
         }
@@ -917,7 +916,15 @@ namespace CryptoPocket
             if (this.OpenConnection() == true)
             {
                 MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.ExecuteNonQuery();
+                cmd.Prepare();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
+                }
                 this.CloseConnection();
             }
 

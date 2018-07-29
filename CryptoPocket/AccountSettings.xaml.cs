@@ -31,7 +31,7 @@ namespace CryptoPocket
         public AccountSettings()
         {
             InitializeComponent();
-            string DatabaseConnectionString = Properties.Settings.Default.ConnectionString;
+            string DatabaseConnectionString = Properties.Settings.Default.ConnectionStringLocal;
             connection = new MySqlConnection(DatabaseConnectionString);
         }
 
