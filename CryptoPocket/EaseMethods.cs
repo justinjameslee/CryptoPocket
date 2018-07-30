@@ -75,7 +75,7 @@ namespace CryptoPocket
                 return value;
             }
         }
-        public static string RemoveCommas(string value)
+        public static string KeepNumbersAndDots(string value)
         {
             var allowedChars = "1234567890.";
             try
@@ -100,12 +100,12 @@ namespace CryptoPocket
             }
         }
 
-        //public static string RemoveAfterLetter(string Remove, string Letter)
-        //{
-        //    Worker.TimeIndexRemove = Remove.LastIndexOf(Letter);
-        //    if (Worker.TimeIndexRemove > 0) { Remove = Remove.Substring(0, Worker.TimeIndexRemove); }
-        //    return Remove;
-        //}
+        public static string RemoveAfterLetter(string Remove, string Letter)
+        {
+            MainWindow.TimeIndexRemove = Remove.LastIndexOf(Letter);
+            if (MainWindow.TimeIndexRemove > 0) { Remove = Remove.Substring(0, MainWindow.TimeIndexRemove); }
+            return Remove;
+        }
 
         public static string API(string url)
         {

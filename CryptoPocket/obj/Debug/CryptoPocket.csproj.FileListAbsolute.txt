@@ -221,10 +221,6 @@ C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\MainWin
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.g.resources
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.Properties.Resources.resources
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.csproj.GenerateResource.Cache
-C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\ProgressDialog.g.cs
-C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\ProgressDialog.baml
-C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\SignupComplete.g.cs
-C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\SignupComplete.baml
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\UIAutomationProvider.dll
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\WPFTextBoxAutoComplete.dll
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\WPFTextBoxAutoComplete.pdb

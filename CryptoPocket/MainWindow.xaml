@@ -1452,7 +1452,7 @@
                                                                     <Grid Width="Auto" Height="90">
                                                                         <Grid HorizontalAlignment="Left" Width="128">
                                                                             <StackPanel Margin="10,10,-59,50">
-                                                                                <TextBlock Text="{Binding MiningWorker}" FontSize="18"/>
+                                                                                <TextBlock Text="{Binding CustomWorkerName}" FontSize="18"/>
                                                                                 <Separator/>
                                                                             </StackPanel>
                                                                         </Grid>
@@ -1486,7 +1486,7 @@
                                                     materialDesign:DialogHost.DialogClosingAttached="DialogHost_OnDialogClosing"
 												    SelectiveScrollingGrid.SelectiveScrollingOrientation="None"
 												    Background="#379824" BorderBrush="#379824"
-												    Command="materialDesign:DialogHost.CloseDialogCommand"
+                                                    Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
 												    Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
 												    ToolTip="MaterialDesignFloatingActionDarkButton" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,55,30"
                                                     materialDesign:ShadowAssist.ShadowDepth="Depth3">

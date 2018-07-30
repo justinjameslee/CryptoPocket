@@ -35,110 +35,8 @@ namespace CryptoPocket
     public partial class MainWindow : Window
     {
 
-        //Variables Affecting the Entire Functionality of the Program
-        public bool SettingsActive;
         public Func<ChartPoint, string> PointLabel { get; set; }
-        MainWindow mw = (MainWindow)Application.Current.MainWindow;
-        Color HoverColour = (Color)ColorConverter.ConvertFromString("#FFFFCC33");
-        Color UnhoverColour = (Color)ColorConverter.ConvertFromString("#FFFEC007");
-        SolidColorBrush BrushGreen = new SolidColorBrush(Colors.Green);
-        SolidColorBrush BrushRed = new SolidColorBrush(Colors.Red);
-        MySqlConnection connection;
-        public bool AlwaysOnTop = false;
-        public static double UniversalBTCPrice = 0;
 
-        //Variables for Trading / Custom Coin Sections
-        public static string initialCoinList;
-        public static string relevantCoinList;
-        public static string[] CoinListA;
-        public static List<string> SepCoinList = new List<string>();
-        public static string initialCoinN;
-        public static string relevantCoinN;
-        public static string CoinN;
-        public static List<string> SepCoinN = new List<string>();
-        public static string relevantCoinID;
-        public static List<string> SepCoinID = new List<string>();
-        public static List<string> SessionCustomCoins = new List<string>();
-        public static List<string> SessionCustomCoinsCurrency = new List<string>();
-        public static MainData[] CoinData;
-        public static string initialCustomCoin;
-        public static string relevantCustomCoin;
-        public static string[] CustomCoinA;
-        public static string[] RegexSplitChange7;
-        public static List<string> SepCustomCoinA = new List<string>();
-        public static string initialCoinB;
-        public static string CustomPrice;
-        public static string CustomChange24;
-        public static string CustomChange7;
-        public static List<string> CustomCoinPrice = new List<string>();
-        public static List<string> CustomCoin24 = new List<string>();
-        public static List<string> CustomCoin7 = new List<string>();
-        public static string Change24;
-        public static string Change7;
-        public static string ChangeCurrency;
-        public static string CustomCoin;
-        bool CoinToggled = false;
-        
-
-        //Variables for Mining / Custom Worker Sections
-        public static string CustomWorker;
-        public static string initialWorkerInfo;
-        public static string relevantWorkerInfo;
-        public static string[] WorkerInfoA;
-        public static List<string> SepWorkerInfoA = new List<string>();
-        public static string initialWorker;
-        public static string[] RegexSplitWorkerInfo;
-        public static string sessWorkerName;
-        public static string CustomWorkerData;
-        public static double sessHashRate;
-        public static string sessHashRateStr;
-        public static double UpTimeBeforeCalc;
-        public static string sessAlgo;
-        public static string sessUpTime;
-        public static string sessProfitability;
-        public static string sessStatus;
-        public static string sessLastUpdated;
-        public static string[] SepCustomWorkerData;
-        public static string CustomWalletAddress;
-        bool WorkerToggled = false;
-        SolidColorBrush CustomWorkerBrush = new SolidColorBrush();
-        public static List<string> SessionCustomWorkers = new List<string>();
-
-        //Variables for Calculating Profitability
-        public static string initialProfit;
-        public static string relevantProfitInfo;
-        public static string[] ProfitInfo;
-        public static List<string> SepProfitInfo = new List<string>();
-        public static string NHProfitability;
-        public static string NHRelProfit;
-        public static string[] NHRelProfitA;
-        public static string NHActualAlgoS;
-        public static int NHActualAlgoI;
-        public static string NHCalcProfitRate;
-        public static double NHCalcProfitBTCD;
-        public static string NHCalcProfitBTC;
-        public static string NHCalcProfitBTCM;
-        public static string NHCalcProfitBTCY;
-        public static Dictionary<int, string> RealProfit = new Dictionary<int, string>();
-        public static string lineNHAlgo;
-        public static string lineHashRate;
-        public static string HashSuffix;
-
-        //Variables for Calculating UpTime
-        public static int TimeIndexRemove;
-        public static bool TimeCalc = false;
-        public static string STimeDays = null;
-        public static string STimeHours = null;
-        public static string STimeMins = null;
-        public static string STimeSeconds = null;
-
-
-        //Varaibles for Custom Summary Boxes
-        public static bool Incorrect;
-        public static string Index;
-        public static bool UpdatingCustomCoin;
-        public static bool UpdatingCustomWorker;
-        public static int IndexWorker;
         public class CustomCoinBox
         {
             public string CustomCoinName { get; set; }
@@ -154,9 +52,11 @@ namespace CryptoPocket
             public string Trend7 { get; set; }
             public int Currency { get; set; }
         }
+
         public class CustomWorkerBox
         {
             public string CustomWorkerName { get; set; }
+            public string MiningWorker { get; set; }
             public string ProfitabilityDay { get; set; }
             public string Hashrate { get; set; }
             public string Uptime { get; set; }
@@ -165,32 +65,99 @@ namespace CryptoPocket
             public string LastUpdated { get; set; }
         }
 
-        //Variables Related to the Database | Adding, Removing, Updating Records | Retriving Information
-        public static int CurrentID = 0;
-        DispatcherTimer dispatcherTimer = new DispatcherTimer();
+        MainWindow mw = (MainWindow)Application.Current.MainWindow;
+
+        MySqlConnection connection;
+        bool CoinToggled = false;
+        bool WorkerToggled = false;
+        public bool AlwaysOnTop = false;
+
         public static bool LoggedIn = false;
         public static bool DefaultLogin = true;
         public static string PreviousUsername;
+
+        public static int CurrentID = 0;
+
+        Color HoverColour = (Color)ColorConverter.ConvertFromString("#FFFFCC33");
+        Color UnhoverColour = (Color)ColorConverter.ConvertFromString("#FFFEC007");
+
+        public static string initialCoinList;
+        public static string relevantCoinList;
+        public static string[] CoinListA;
+        public static List<string> SepCoinList = new List<string>();
+
+        public static string initialCoinN;
+        public static string relevantCoinN;
+        public static string CoinN;
+        public static List<string> SepCoinN = new List<string>();
+        public static string relevantCoinID;
+        public static List<string> SepCoinID = new List<string>();
+        public static List<string> SessionCustomCoins = new List<string>();
+        public static List<string> SessionCustomCoinsCurrency = new List<string>();
+
+        public static MainData[] CoinData;
+
+        public static string initialCustomCoin;
+        public static string relevantCustomCoin;
+        public static string[] CustomCoinA;
+        public static string[] RegexSplitChange7;
+        public static List<string> SepCustomCoinA = new List<string>();
+
+        public static string initialCoinB;
+        public static string CustomPrice;
+        public static string CustomChange24;
+        public static string CustomChange7;
+        public static List<string> CustomCoinPrice = new List<string>();
+        public static List<string> CustomCoin24 = new List<string>();
+        public static List<string> CustomCoin7 = new List<string>();
+        public static string Change24;
+        public static string Change7;
+        public static string ChangeCurrency;
+        public static string CustomCoin;
+        public static string CustomWorker;
+
+        public static string initialWorkerInfo;
+        public static string relevantWorkerInfo;
+        public static string[] WorkerInfoA;
+        public static List<string> SepWorkerInfoA = new List<string>();
+        public static string initialWorker;
+        public static string[] RegexSplitWorkerInfo;
+        public static string sessWorkerName;
+
+        public static bool WalletSelected = false;
+
+        public static bool Incorrect;
+        public static string Index;
+        public static bool UpdatingCustomCoin;
+        public static bool UpdatingCustomWorker;
+
         public static string salt;
         public static string hashedpassword;
         public static string NameUp;
         public static string UserUp;
         public static string EmailUp;
+
+        DispatcherTimer dispatcherTimer = new DispatcherTimer();
+
         public static bool SigningUp = false;
         public static bool LoggingIn = false;
         public static bool SavingWalletID = false;
         public static bool RemovingWalletID = false;
         public static bool AddWorkerBool = false;
         public static bool RemoveWorkerBool = false;
+
         public static string strLoginEmail;
         public static string strLoginUsername;
         public static string strLoginPassword;
+
         public static string SignupEmail;
         public static string SingupUsername;
         public static string SignUpPassword;
+
         public static string SaveCustomID;
         public static string SaveWalletAddress;
         public static string RemoveCustomID;
+
         public static string strAddWorkerNameID;
         public static string strAddWorkerPool;
         public static string strAddWorkerWalletID;
@@ -198,7 +165,9 @@ namespace CryptoPocket
         public static string strAddWorkerElectricity;
         public static string strAddWorkerName;
         public static string strRemoveWorkerName;
-        public static bool WalletSelected = false;
+
+        public bool SettingsActive;
+
         public List<string> ID = new List<string>();
         public List<string> EMAIL = new List<string>();
         public List<string> USERNAME = new List<string>();
@@ -212,15 +181,19 @@ namespace CryptoPocket
         public List<string> ID_CC = new List<string>();
         public List<string> C_COIN = new List<string>();
         public List<string> C_CURRENCY = new List<string>();
-        public List<string> CUSTOMWORKERID = new List<string>();
+
         public List<string> WORKERNAME = new List<string>();
         public List<string> POWER = new List<string>();
         public List<string> POOL = new List<string>();
+
         private static readonly Regex NumericalInput = new Regex("[^0-9]+");
+
         public ObservableCollection<string> WalletCustomIDs { get; set; }
         public ObservableCollection<string> WalletCustomAddresses { get; set; }
         public ObservableCollection<string> WorkerList { get; set; }
         public ObservableCollection<string> WorkerCustomList { get; set; }
+
+
 
         public MainWindow()
         {
@@ -336,32 +309,7 @@ namespace CryptoPocket
             }
         }
 
-        public void CalculateUniversalBTCPrice()
-        {
-            string url = @"https://api.coinmarketcap.com/v2/ticker/1/?convert=BTC";
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-
-            request.AutomaticDecompression = DecompressionMethods.GZip;
-
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                initialCustomCoin = reader.ReadToEnd();
-                relevantCustomCoin = References.EaseMethods.getBetween(initialCustomCoin, "\"USD\": {", "\"last_updated\"");
-                CustomCoinA = Regex.Split(relevantCustomCoin, "},");
-                SepCustomCoinA = CustomCoinA.OfType<string>().ToList();
-                for (int x = 0; x < SepCustomCoinA.Count; x++)
-                {
-                    initialCoinB = SepCustomCoinA[x];
-                    CustomPrice = References.EaseMethods.getBetween(initialCoinB, "price\": ", ",");
-                    break;
-                }
-            }
-
-            UniversalBTCPrice = Convert.ToDouble(CustomPrice);
-        }
 
         public void CustomCoinCalculation()
         {
@@ -436,11 +384,6 @@ namespace CryptoPocket
                 rounding = Math.Round(rounding, 8);
                 CustomCoinPrice[1] = Convert.ToString(rounding);
 
-                if (CustomCoin == "BTC")
-                {
-                    UniversalBTCPrice = Convert.ToDouble(CustomCoinPrice[0]);
-                }
-
                 CustomCoinPrice[0] = CustomCoin + "/USD: $" + CustomCoinPrice[0];
                 CustomCoinPrice[1] = CustomCoin + "/BTC: " + CustomCoinPrice[1];
 
@@ -500,18 +443,20 @@ namespace CryptoPocket
                     CustomWorker = WorkerComboBox.Text;
                 }
 
+
                 WorkerToggled = false;
-                IndexWorker = SelectWorker(CUSTOMWORKERID).IndexOf(CustomWorker);
-                string CustomPool = SelectWorker(POOL).ElementAt(IndexWorker);
-                string CustomWalletID = SelectWorker(WORKERNAME).ElementAt(IndexWorker);
-                IndexWorker = SelectMiningSettings(CUSTOMID).IndexOf(CustomWalletID);
-                CustomWalletAddress = SelectMiningSettings(WALLET).ElementAt(IndexWorker);
+
+                int Index = SelectWorker(WORKERNAME).IndexOf(CustomWorker);
+                string CustomPool = SelectWorker(POOL).ElementAt(Index);
+                string CustomWalletID = SelectWorker(WALLET).ElementAt(Index);
+                Index = SelectMiningSettings(CUSTOMID).IndexOf(CustomWalletID);
+                string CustomWalletAddress = SelectMiningSettings(WALLET).ElementAt(Index);
 
                 if (CustomPool == "NiceHash")
                 {
                     try
                     {
-                        string url = @"https://api.nicehash.com/api?method=stats.provider.workers&addr=" + CustomWalletAddress;
+                        string url = @"https://api.nicehash.com/api?method=stats.provider.workers&addr=" + strAddWorkerWalletAddress;
 
                         HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 
@@ -522,119 +467,52 @@ namespace CryptoPocket
                         using (StreamReader reader = new StreamReader(stream))
                         {
                             initialWorkerInfo = reader.ReadToEnd();
-                            relevantWorkerInfo = References.EaseMethods.getBetween(initialWorkerInfo, "workers\":[", "],\"algo\"");
-                            WorkerInfoA = Regex.Split(relevantWorkerInfo, "],");
-                            SepWorkerInfoA = WorkerInfoA.OfType<string>().ToList();
-                            for (int x = 0; x < SepWorkerInfoA.Count; x++)
+                            if (!initialWorkerInfo.Contains("Incorrect BTC address specified"))
                             {
-                                initialWorker = SepWorkerInfoA[x];
-                                RegexSplitWorkerInfo = Regex.Split(initialWorker, ",");
-                                sessWorkerName = References.EaseMethods.getBetween(RegexSplitWorkerInfo[0], "[\"", "\"");
-                                if (sessWorkerName.Length == 0)
+                                relevantWorkerInfo = References.EaseMethods.getBetween(initialWorkerInfo, "workers\":[", "],\"algo\"");
+                                WorkerInfoA = Regex.Split(relevantWorkerInfo, "],");
+                                SepWorkerInfoA = WorkerInfoA.OfType<string>().ToList();
+                                for (int x = 0; x < SepWorkerInfoA.Count; x++)
                                 {
-                                    sessWorkerName = "unknown";
-                                }
-
-                                if (sessWorkerName == CustomWorker)
-                                {
-                                    CustomWorkerData = SepWorkerInfoA[x];
-                                    try
+                                    initialWorker = SepWorkerInfoA[x];
+                                    RegexSplitWorkerInfo = Regex.Split(initialWorker, ",");
+                                    sessWorkerName = References.EaseMethods.getBetween(RegexSplitWorkerInfo[0], "[\"", "\"");
+                                    if (sessWorkerName.Length == 0)
                                     {
-                                        char last = CustomWorkerData[CustomWorkerData.Length - 1];
-                                        if (last != ']')
-                                        {
-                                            CustomWorkerData = CustomWorkerData + "]";
-                                        }
+                                        sessWorkerName = "unknown";
                                     }
-                                    catch (Exception)
-                                    {
 
-                                    }
-                                    break;
+                                    WorkerList.Add(sessWorkerName);
                                 }
-                            }
-
-                            CustomWorkerData = References.EaseMethods.getBetween(CustomWorkerData, ",{\"", "]");
-                            CustomWorkerData = EaseMethods.RemoveExtraText(CustomWorkerData);
-                            SepCustomWorkerData = CustomWorkerData.Split(',');
-
-                            if (SepCustomWorkerData.Length == 6)
-                            {
-                                sessHashRate = Convert.ToDouble(SepCustomWorkerData[0]);
-                                UpTimeBeforeCalc = Convert.ToDouble(SepCustomWorkerData[1]);
-                                sessAlgo = "\"" + SepCustomWorkerData[5] + "\"";
-                                GETWorkerInfoNH();
-                                GETWorkerCalcProfit();
-                            }
-                            else if (SepCustomWorkerData.Length == 7)
-                            {
-                                sessHashRate = Convert.ToDouble(SepCustomWorkerData[0]);
-                                UpTimeBeforeCalc = Convert.ToDouble(SepCustomWorkerData[2]);
-                                sessAlgo = "\"" + SepCustomWorkerData[6] + "\"";
-                                GETWorkerInfoNH();
-                                GETWorkerCalcProfit();
-                            }
-                            else if (SepCustomWorkerData.Length == 8)
-                            {
-                                sessHashRate = Convert.ToDouble(SepCustomWorkerData[0]);
-                                UpTimeBeforeCalc = Convert.ToDouble(SepCustomWorkerData[3]);
-                                sessAlgo = "\"" + SepCustomWorkerData[7] + "\"";
-                                GETWorkerInfoNH();
-                                GETWorkerCalcProfit();
-                            }
-                            else if (SepCustomWorkerData.Length == 9)
-                            {
-                                sessHashRate = Convert.ToDouble(SepCustomWorkerData[0]);
-                                UpTimeBeforeCalc = Convert.ToDouble(SepCustomWorkerData[3]);
-                                sessAlgo = "\"" + SepCustomWorkerData[8] + "\"";
-                                GETWorkerInfoNH();
-                                GETWorkerCalcProfit();
-                            }
-                            else if (SepCustomWorkerData.Length == 10)
-                            {
-                                sessHashRate = Convert.ToDouble(SepCustomWorkerData[0]);
-                                UpTimeBeforeCalc = Convert.ToDouble(SepCustomWorkerData[4]);
-                                sessAlgo = "\"" + SepCustomWorkerData[9] + "\"";
-                                GETWorkerInfoNH();
-                                GETWorkerCalcProfit();
-                            }
-
-                            if (sessHashRateStr == "0 " + HashSuffix)
-                            {
-                                sessStatus = "Offline";
-                                CustomWorkerBrush = BrushRed;   
                             }
                             else
                             {
-                                sessStatus = "Online";
-                                CustomWorkerBrush = BrushGreen;
+                                WorkerList.Add("no data found");
                             }
-
-                            DateTime LocalTime = DateTime.UtcNow.ToLocalTime();
-                            sessLastUpdated = LocalTime.ToString("r");
-                            sessLastUpdated = sessLastUpdated.Substring(0, sessLastUpdated.Length - 4);
-                            sessLastUpdated = sessLastUpdated + " LOCAL";
-
-                            if (UpdatingCustomCoin == true)
-                            {
-                                int index = WorkerBox.SelectedIndex;
-                                WorkerBox.Items.RemoveAt(index);
-                                WorkerBox.Items.Insert(index, new CustomWorkerBox() { CustomWorkerName = CustomWorker, Hashrate = sessHashRateStr, Status = sessStatus, StatusColour = CustomWorkerBrush, LastUpdated = sessLastUpdated, Uptime = sessUpTime, ProfitabilityDay = sessProfitability });
-                                SessionCustomWorkers.Insert(index, CustomWorker);
-                            }
-                            else
-                            {
-                                CoinBox.Items.Add(new CustomWorkerBox() { CustomWorkerName = CustomWorker, Hashrate = sessHashRateStr, Status = sessStatus, StatusColour = CustomWorkerBrush, LastUpdated = sessLastUpdated, Uptime = sessUpTime, ProfitabilityDay = sessProfitability });
-                                SessionCustomWorkers.Add(CustomWorker);
-                            }
-
-                            WorkerComboBox.Text = "";
                         }
                     }
                     catch (Exception)
                     {
-
+                        WorkerList.Add("no data found");
                     }
+
+                    if (UpdatingCustomCoin == true)
+                    {
+                        int index = CoinBox.SelectedIndex;
+                        CoinBox.Items.RemoveAt(index);
+                        CoinBox.Items.Insert(index, new CustomCoinBox() { CustomCoinName = CustomCoin, CustomCoinFontSize = FontSize, ValueUSD = CustomCoinPrice[0], ValueBTC = CustomCoinPrice[1], PortfolioQuan = "N/A", PortfolioValue = "N/A", Change24Hour = CustomCoin24[Currency], Change7Day = CustomCoin7[Currency], OverallTrend = Change7, Trend24 = Change24, Trend7 = Change7, Currency = Currency });
+                        SessionCustomCoins.Insert(index, CustomCoin);
+                        SessionCustomCoinsCurrency.Insert(index, Convert.ToString(Currency));
+                    }
+                    else
+                    {
+                        CoinBox.Items.Add(new CustomCoinBox() { CustomCoinName = CustomCoin, CustomCoinFontSize = FontSize, ValueUSD = CustomCoinPrice[0], ValueBTC = CustomCoinPrice[1], PortfolioQuan = "N/A", PortfolioValue = "N/A", Change24Hour = CustomCoin24[Currency], Change7Day = CustomCoin7[Currency], OverallTrend = Change7, Trend24 = Change24, Trend7 = Change7, Currency = Currency });
+                        SessionCustomCoins.Add(CustomCoin);
+                        SessionCustomCoinsCurrency.Add(Convert.ToString(Currency));
+                    }
+
+                    CoinComboBox.Text = "";
+                    ComboCoinPercentage.Text = "";
                 }
                 else if (CustomPool == "SiaMining")
                 {
@@ -649,171 +527,6 @@ namespace CryptoPocket
                 CoinComboBox.Text = "";
                 ComboCoinPercentage.Text = "";
                 Incorrect = true;
-            }
-        }
-
-        public void GETWorkerNHProfit()
-        {
-
-            RealProfit.Clear();
-
-            string url = @"https://api.nicehash.com/api?method=stats.provider.ex&addr=" + CustomWalletAddress;
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.AutomaticDecompression = DecompressionMethods.GZip;
-
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                initialProfit = reader.ReadToEnd();
-                relevantProfitInfo = References.EaseMethods.getBetween(initialProfit, ":[", "],\"nh_wallet");
-                ProfitInfo = Regex.Split(relevantWorkerInfo, "},{");
-                SepProfitInfo = WorkerInfoA.OfType<string>().ToList();
-                for (int x = 0; x < SepProfitInfo.Count; x++)
-                {
-                    if (SepProfitInfo[x] != "")
-                    {
-                        NHProfitability = SepProfitInfo[x];
-                        NHActualAlgoS = SepProfitInfo[x];
-                        NHProfitability = References.EaseMethods.getBetween(NHProfitability, "profitability", ",\"data");
-                        NHProfitability = EaseMethods.RemoveExtraText(NHProfitability);
-
-                        NHActualAlgoS = EaseMethods.RemoveonlyCurly(NHActualAlgoS);
-                        NHActualAlgoS = NHActualAlgoS + "}";
-                        NHActualAlgoS = References.EaseMethods.getBetween(NHActualAlgoS, "algo", "}");
-                        NHActualAlgoS = EaseMethods.RemoveExtraText(NHActualAlgoS);
-                        NHActualAlgoI = Convert.ToInt32(NHActualAlgoS);
-
-                        RealProfit.Add(NHActualAlgoI, NHProfitability);
-                    }
-                    else if (SepProfitInfo[x] == "")
-                    {
-                        break;
-                    }
-
-                }
-            }
-        }
-        public void GETWorkerCalcProfit()
-        {
-            NHCalcProfitRate = RealProfit[Convert.ToInt32(SepCustomWorkerData[5])];
-            NHCalcProfitBTCD = Math.Round(Convert.ToDouble(NHCalcProfitRate) * sessHashRate, 8);
-            if (WorkerToggled == false)
-            {
-                if (UniversalBTCPrice == 0)
-                {
-                    CalculateUniversalBTCPrice();
-                }
-
-                sessProfitability = "$" + string.Format("{0:#,0.00}", NHCalcProfitBTCD * UniversalBTCPrice);
-                sessProfitability = "USD/DAY: " + sessProfitability;
-            }
-            else if (WorkerToggled == true)
-            {
-                sessProfitability = Convert.ToString(NHCalcProfitBTCD);
-                sessProfitability = "BTC/DAY: " + sessProfitability;
-            }
-        }
-
-        public void GETWorkerInfoNH()
-        {
-            UpTimeBeforeCalc = UpTimeBeforeCalc * 60;
-
-            StreamReader NHAlgoReader = new StreamReader(@"Resources\NHAlgo.txt");
-            {
-                while ((lineNHAlgo = NHAlgoReader.ReadLine()) != null)
-                {
-                    if (lineNHAlgo.Contains(sessAlgo))
-                    {
-                        sessAlgo = lineNHAlgo;
-                        sessAlgo = References.EaseMethods.getBetween(sessAlgo, ": \"", "\"");
-                        break;
-                    }
-                }
-            }
-
-            StreamReader HashRateReader = new StreamReader(@"Resources\HashRates.txt");
-            {
-                while ((lineHashRate = HashRateReader.ReadLine()) != null)
-                {
-                    if (lineHashRate.Contains(sessAlgo))
-                    {
-                        HashSuffix = lineHashRate;
-                        HashSuffix = References.EaseMethods.getBetween(HashSuffix, ": \"", "\"");
-                        break;
-                    }
-                }
-            }
-
-            sessHashRateStr = Convert.ToString(sessHashRate) + " " + HashSuffix;
-        }
-
-        public void WorkerTimeCalculation()
-        {
-            if (UpTimeBeforeCalc == 0)
-            {
-                sessUpTime = "Just Started";
-            }
-            else
-            {
-                while (TimeCalc == false)
-                {
-                    if ((UpTimeBeforeCalc / 86400) < 1 && STimeDays == null)
-                    {
-                        STimeDays = "";
-                    }
-                    else if ((UpTimeBeforeCalc / 86400) >= 1 && STimeDays == null)
-                    {
-                        STimeDays = Convert.ToString(UpTimeBeforeCalc / 86400);
-                        STimeDays = EaseMethods.RemoveAfterLetter(STimeDays, ".");
-                        STimeDays = " " + STimeDays + "D";
-                    }
-                    else if ((UpTimeBeforeCalc / 3600) < 1 && STimeHours == null)
-                    {
-                        STimeHours = "";
-                    }
-                    else if ((UpTimeBeforeCalc / 3600) >= 1 && STimeHours == null)
-                    {
-                        if (UpTimeBeforeCalc / 3600 > 24)
-                        {
-                            STimeHours = Convert.ToString((UpTimeBeforeCalc / 3600) - 24);
-                            STimeHours = EaseMethods.RemoveAfterLetter(STimeHours, ".");
-                            STimeHours = " " + STimeHours + "H";
-                        }
-                        else
-                        {
-                            STimeHours = Convert.ToString(UpTimeBeforeCalc / 3600);
-                            STimeHours = EaseMethods.RemoveAfterLetter(STimeHours, ".");
-                            STimeHours = " " + STimeHours + "H";
-                        }
-                    }
-                    else if (((UpTimeBeforeCalc / 60) % 60) < 1 && STimeMins == null)
-                    {
-                        STimeMins = "";
-                    }
-                    else if (((UpTimeBeforeCalc / 60) % 60) >= 1 && STimeMins == null)
-                    {
-                        STimeMins = Convert.ToString((UpTimeBeforeCalc / 60) % 60);
-                        STimeMins = EaseMethods.RemoveAfterLetter(STimeMins, ".");
-                        STimeMins = " " + STimeMins + "M";
-                    }
-                    else if ((UpTimeBeforeCalc % 60) < 1 && STimeSeconds == null)
-                    {
-                        STimeSeconds = "";
-                    }
-                    else if ((UpTimeBeforeCalc % 60) >= 1 && STimeSeconds == null)
-                    {
-                        STimeSeconds = Convert.ToString(UpTimeBeforeCalc % 60);
-                        STimeSeconds = EaseMethods.RemoveAfterLetter(STimeSeconds, ".");
-                        STimeSeconds = " " + STimeSeconds + "S";
-                    }
-                    else
-                    {
-                        TimeCalc = true;
-                    }
-                }
-                sessUpTime = STimeDays + STimeHours + STimeMins + STimeSeconds;
             }
         }
 
@@ -843,6 +556,7 @@ namespace CryptoPocket
             {
                 Incorrect = true;
             }
+            WorkerBox.Items.Add(new CustomWorkerBox() { });
         }
 
         public void ChangeCurrencyMethod(int Y)
@@ -1610,7 +1324,6 @@ namespace CryptoPocket
         {
             string query = "SELECT * FROM CryptoWorkers WHERE ID='" + CurrentID + "'";
 
-            CUSTOMWORKERID.Clear();
             WORKERNAME.Clear();
             POWER.Clear();
             POOL.Clear();
@@ -1622,7 +1335,6 @@ namespace CryptoPocket
 
                 while (dataReader.Read())
                 {
-                    CUSTOMWORKERID.Add(dataReader["CUSTOMID"] + "");
                     WORKERNAME.Add(dataReader["WORKER"] + "");
                     POWER.Add(dataReader["POWER"] + "");
                     POOL.Add(dataReader["POOL"] + "");
