@@ -114,6 +114,7 @@ namespace CryptoPocket
         public static string Change7;
         public static string ChangeCurrency;
         public static string CustomCoin;
+        public static string CustomWorker;
 
         public static string initialWorkerInfo;
         public static string relevantWorkerInfo;
@@ -128,6 +129,7 @@ namespace CryptoPocket
         public static bool Incorrect;
         public static string Index;
         public static bool UpdatingCustomCoin;
+        public static bool UpdatingCustomWorker;
 
         public static string salt;
         public static string hashedpassword;
@@ -162,6 +164,7 @@ namespace CryptoPocket
         public static string strAddWorkerWalletAddress;
         public static string strAddWorkerElectricity;
         public static string strAddWorkerName;
+        public static string strRemoveWorkerName;
 
         public bool SettingsActive;
 
@@ -202,20 +205,14 @@ namespace CryptoPocket
             HeaderTabs.SelectedIndex = 0;
 
             //string connectionstring2 = "SERVER=27.121.66.21;DATABASE=goldli00_CryptoPocket;UID=goldli00_admin;PWD=passCrypto123;";
-            string DatabaseConnectionString2 = "server=127.0.0.1;user id=root;persistsecurityinfo=True;database=cryptopocket;PWD=localPassword123";
 
             string DatabaseConnectionString = Properties.Settings.Default.ConnectionStringLocal;
-            connection = new MySqlConnection(DatabaseConnectionString2);
+            connection = new MySqlConnection(DatabaseConnectionString);
 
             WalletCustomIDs = new ObservableCollection<string>();
             WalletCustomAddresses = new ObservableCollection<string>();
             WorkerList = new ObservableCollection<string>();
             WorkerCustomList = new ObservableCollection<string>();
-
-        }
-
-        private void ThemeChecked(object sender, RoutedEventArgs e)
-        {
 
         }
 
@@ -251,6 +248,18 @@ namespace CryptoPocket
         public void DeleteCustomCoins()
         {
             string query = "DELETE FROM CryptoCustomCoins WHERE ID='" + CurrentID + "'";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+
+        public void DeleteCustomWorkers()
+        {
+            string query = "DELETE FROM CryptoWorkers WHERE ID='" + CurrentID + "'";
 
             if (this.OpenConnection() == true)
             {
@@ -417,9 +426,122 @@ namespace CryptoPocket
             }
         }
 
+        public void CustomWorkerCalculation()
+        {
+            try
+            {
+                if (UpdatingCustomWorker == true)
+                {
+                    SessionCustomCoins.Remove(ComboEditCoinName.Text);
+                    SessionCustomCoinsCurrency.Remove(Convert.ToString(((CustomCoinBox)CoinBox.SelectedItem).Currency));
+                    ChangeCurrency = ComboEditCoinPercentage.Text;
+                    CustomCoin = ComboEditCoinName.Text;
+                }
+                else
+                {
+                    CustomCoin = CoinComboBox.Text;
+                }
+
+
+                CoinToggled = false;
+
+                CustomCoinPrice.Clear();
+                CustomCoin24.Clear();
+                CustomCoin7.Clear();
+
+                string url = @"https://api.coinmarketcap.com/v2/ticker/" + Index + "/?convert=BTC";
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
+                request.AutomaticDecompression = DecompressionMethods.GZip;
+
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    initialCustomCoin = reader.ReadToEnd();
+                    relevantCustomCoin = References.EaseMethods.getBetween(initialCustomCoin, "\"USD\": {", "\"last_updated\"");
+                    CustomCoinA = Regex.Split(relevantCustomCoin, "},");
+                    SepCustomCoinA = CustomCoinA.OfType<string>().ToList();
+                    for (int x = 0; x < SepCustomCoinA.Count; x++)
+                    {
+                        initialCoinB = SepCustomCoinA[x];
+                        CustomPrice = References.EaseMethods.getBetween(initialCoinB, "price\": ", ",");
+                        CustomChange24 = References.EaseMethods.getBetween(initialCoinB, "percent_change_24h\": ", ",");
+                        CustomChange7 = EaseMethods.RemoveKeepingColumnAndDots(initialCoinB);
+                        RegexSplitChange7 = Regex.Split(CustomChange7, ":");
+                        CustomChange7 = RegexSplitChange7.Last();
+                        CustomCoinPrice.Add(CustomPrice);
+                        CustomCoin24.Add(CustomChange24);
+                        CustomCoin7.Add(CustomChange7);
+                    }
+                }
+
+
+                string FontSize;
+                decimal rounding;
+
+                if (CustomCoin.Length == 5) { FontSize = "14"; }
+                else if (CustomCoin.Length == 6) { FontSize = "12"; }
+                else if (CustomCoin.Length >= 7) { FontSize = "10"; }
+                else { FontSize = "16"; }
+
+                if (CustomCoinPrice[0].Contains("e")) { rounding = Decimal.Parse(CustomCoinPrice[0], System.Globalization.NumberStyles.Float); }
+                else { rounding = Convert.ToDecimal(CustomCoinPrice[0]); }
+                rounding = Math.Round(rounding, 2);
+                CustomCoinPrice[0] = Convert.ToString(rounding);
+
+                if (CustomCoinPrice[1].Contains("e")) { rounding = Decimal.Parse(CustomCoinPrice[1], System.Globalization.NumberStyles.Float); }
+                else { rounding = Convert.ToDecimal(CustomCoinPrice[1]); }
+                rounding = Math.Round(rounding, 8);
+                CustomCoinPrice[1] = Convert.ToString(rounding);
+
+                CustomCoinPrice[0] = CustomCoin + "/USD: $" + CustomCoinPrice[0];
+                CustomCoinPrice[1] = CustomCoin + "/BTC: " + CustomCoinPrice[1];
+
+                int Currency = 0;
+
+                if (ChangeCurrency == "USD")
+                {
+                    Currency = 0;
+                    ChangeCurrencyMethod(Currency);
+                }
+                else if (ChangeCurrency == "BTC")
+                {
+                    Currency = 1;
+                    ChangeCurrencyMethod(Currency);
+                }
+
+                if (UpdatingCustomCoin == true)
+                {
+                    int index = CoinBox.SelectedIndex;
+                    CoinBox.Items.RemoveAt(index);
+                    CoinBox.Items.Insert(index, new CustomCoinBox() { CustomCoinName = CustomCoin, CustomCoinFontSize = FontSize, ValueUSD = CustomCoinPrice[0], ValueBTC = CustomCoinPrice[1], PortfolioQuan = "N/A", PortfolioValue = "N/A", Change24Hour = CustomCoin24[Currency], Change7Day = CustomCoin7[Currency], OverallTrend = Change7, Trend24 = Change24, Trend7 = Change7, Currency = Currency });
+                    SessionCustomCoins.Insert(index, CustomCoin);
+                    SessionCustomCoinsCurrency.Insert(index, Convert.ToString(Currency));
+                }
+                else
+                {
+                    CoinBox.Items.Add(new CustomCoinBox() { CustomCoinName = CustomCoin, CustomCoinFontSize = FontSize, ValueUSD = CustomCoinPrice[0], ValueBTC = CustomCoinPrice[1], PortfolioQuan = "N/A", PortfolioValue = "N/A", Change24Hour = CustomCoin24[Currency], Change7Day = CustomCoin7[Currency], OverallTrend = Change7, Trend24 = Change24, Trend7 = Change7, Currency = Currency });
+                    SessionCustomCoins.Add(CustomCoin);
+                    SessionCustomCoinsCurrency.Add(Convert.ToString(Currency));
+                }
+
+                CoinComboBox.Text = "";
+                ComboCoinPercentage.Text = "";
+
+            }
+            catch (Exception)
+            {
+                CoinComboBox.Text = "";
+                ComboCoinPercentage.Text = "";
+                Incorrect = true;
+            }
+        }
+
         private void btnCustomCoin_Click(object sender, RoutedEventArgs e)
         {
-            if (CoinComboBox.Text.Length != 0)
+            if (CoinComboBox.Text.Length != 0 && SepCoinN.Contains(CoinComboBox.Text))
             {
                 UpdatingCustomCoin = false;
                 CustomCoinCalculation();
@@ -429,6 +551,21 @@ namespace CryptoPocket
             {
                 Incorrect = true;
             }
+        }
+
+        private void btnCustomWorker_Click(object sender, RoutedEventArgs e)
+        {
+            if (WorkerComboBox.Text.Length != 0 && WorkerCustomList.Contains(WorkerComboBox.Text))
+            {
+                UpdatingCustomWorker = false;
+                CustomWorkerCalculation();
+                Incorrect = false;
+            }
+            else
+            {
+                Incorrect = true;
+            }
+            WorkerBox.Items.Add(new CustomWorkerBox() { });
         }
 
         public void ChangeCurrencyMethod(int Y)
@@ -497,36 +634,9 @@ namespace CryptoPocket
                 eventArgs.Cancel();
                 Incorrect = false;
             }
-            else
-            {
-
-            }
         }
 
-        private void btnTradingAddCoin_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void btnTradingRemoveCoin_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void btnCustomWorker_Click(object sender, RoutedEventArgs e)
-        {
-            WorkerBox.Items.Add(new CustomWorkerBox() { });
-        }
-
-        private void btnMiningAddWorker_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void btnMiningRemoveWorker_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
+        
 
         private void Header_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -791,11 +901,6 @@ namespace CryptoPocket
             AccountSettings.Visibility = Visibility.Hidden;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             if (LoggedIn == true)
@@ -917,14 +1022,7 @@ namespace CryptoPocket
             {
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 cmd.Prepare();
-                try
-                {
-                    cmd.ExecuteNonQuery();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.ToString());
-                }
+                cmd.ExecuteNonQuery();
                 this.CloseConnection();
             }
 
@@ -1033,6 +1131,10 @@ namespace CryptoPocket
 
                         this.Dispatcher.Invoke(() =>
                         {
+                            if (WalletCustomIDs[0] == "no data found")
+                            {
+                                WalletCustomIDs.Clear();
+                            }
                             WalletCustomIDs.Add(SaveCustomID);
                             AccountSettings.ComboBoxIDs.ItemsSource = WalletCustomIDs;
                         });
@@ -1068,6 +1170,7 @@ namespace CryptoPocket
                         {
                             WorkerCustomList.Add(strAddWorkerNameID);
                             WorkerComboBox.ItemsSource = WorkerCustomList;
+                            MiningRemoveComboBox.ItemsSource = WorkerCustomList;
                         });
                     }
                     catch (Exception)
@@ -1081,6 +1184,52 @@ namespace CryptoPocket
                     }
                 }
             });
+        }
+
+        private Task DeleteWorker()
+        {
+            return Task.Run(() =>
+            {
+                string query = "DELETE FROM CryptoWorkers WHERE ID='" + CurrentID + "' AND CUSTOMID='" + strRemoveWorkerName + "'";
+
+                if (OpenConnection() == true)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand(query, connection);
+                        cmd.ExecuteNonQuery();
+                        this.CloseConnection();
+
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            WorkerCustomList.Remove(strRemoveWorkerName);
+                            WorkerComboBox.ItemsSource = WorkerCustomList;
+                            MiningRemoveComboBox.ItemsSource = WorkerCustomList;
+
+                            //DeleteCustomWorkers();
+                            //for (int x = 0; x < SessionCustomCoins.Count; x++)
+                            //{
+                            //    string coin = SessionCustomCoins[x];
+                            //    string Currency = SessionCustomCoinsCurrency[x];
+                            //    InsertCustomCoins(coin, Currency);
+                            //}
+                            //CoinBox.Items.Clear();
+                            //SessionCustomCoins.Clear();
+                            //SessionCustomCoinsCurrency.Clear();
+                        });
+                    }
+                    catch (Exception)
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            ProgressDialog.IsOpen = false;
+                            RemoveWorkerInfo.IsOpen = true;
+                        });
+
+                    }
+                }
+            });
+
         }
 
         public void DeleteMiningSettings()
@@ -1381,7 +1530,7 @@ namespace CryptoPocket
                 else
                 {
                     dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
-                    dispatcherTimer.Interval = new TimeSpan(0, 0, 20);
+                    dispatcherTimer.Interval = new TimeSpan(0, 0, 5);
                     dispatcherTimer.Start();
 
                     salt = CreateSalt(10);
@@ -1453,7 +1602,7 @@ namespace CryptoPocket
                 else
                 {
                     dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
-                    dispatcherTimer.Interval = new TimeSpan(0, 0, 25);
+                    dispatcherTimer.Interval = new TimeSpan(0, 0, 5);
                     dispatcherTimer.Start();
 
                     LoginUser();
@@ -1466,7 +1615,7 @@ namespace CryptoPocket
                 && RemovingWalletID == false && AddWorkerBool == false && RemoveWorkerBool == false)
             {
                 dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
-                dispatcherTimer.Interval = new TimeSpan(0, 0, 3);
+                dispatcherTimer.Interval = new TimeSpan(0, 0, 2);
                 dispatcherTimer.Start();
 
                 LogoutUserCalc();
@@ -1501,7 +1650,7 @@ namespace CryptoPocket
                     else
                     {
                         dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
-                        dispatcherTimer.Interval = new TimeSpan(0, 0, 3);
+                        dispatcherTimer.Interval = new TimeSpan(0, 0, 2);
                         dispatcherTimer.Start();
 
                         SaveCustomID = CustomID.Text;
@@ -1521,7 +1670,7 @@ namespace CryptoPocket
                 if (RemoveComboBoxIDs.Text.Length != 0 && LoggedIn == true)
                 {
                     dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
-                    dispatcherTimer.Interval = new TimeSpan(0, 0, 3);
+                    dispatcherTimer.Interval = new TimeSpan(0, 0, 2);
                     dispatcherTimer.Start();
 
                     RemoveCustomID = RemoveComboBoxIDs.Text;
@@ -1545,7 +1694,7 @@ namespace CryptoPocket
                 if (LoggedIn == true && AddWorkerNameCustomID.Text.Length != 0 && AddWorkerPool.Text.Length != 0 && AddWorkerWalletCustomID.Text.Length != 0 && AddWorkerName.Text.Length != 0 && AddWorkerElectricity.Text.Length != 0)
                 {
                     dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
-                    dispatcherTimer.Interval = new TimeSpan(0, 0, 8);
+                    dispatcherTimer.Interval = new TimeSpan(0, 0, 4);
                     dispatcherTimer.Start();
 
                     strAddWorkerNameID = AddWorkerNameCustomID.Text;
@@ -1573,6 +1722,21 @@ namespace CryptoPocket
             else if (RemoveWorkerBool == true)
             {
                 RemoveWorkerBool = false;
+
+                if (LoggedIn == true && MiningRemoveComboBox.Text.Length != 0)
+                {
+                    dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
+                    dispatcherTimer.Interval = new TimeSpan(0, 0, 4);
+                    dispatcherTimer.Start();
+
+                    strRemoveWorkerName = MiningRemoveComboBox.Text;
+
+
+                }
+                else
+                {
+
+                }
             }
         }
 
@@ -2034,16 +2198,50 @@ namespace CryptoPocket
                     dispatcherTimer.Stop();
                     this.Dispatcher.Invoke(() =>
                     {
-                        ProgressDialog.IsOpen = false;
-                        AddWorkerInfo.IsOpen = true;
-                        AddWorkerInfoTitle.Text = "Server-side Issue";
-                        AddWorkerInfo1.Text = "Please try again later.";
-                        AddWorkerInfo2.Opacity = 0;
+                        ServeSideError(ProgressDialog,AddWorkerInfo,AddWorkerInfoTitle,AddWorkerInfo1,AddWorkerInfo2);
                         AddWorkerInfo3.Opacity = 0;
                         AddWorkerInfo4.Opacity = 0;
                     });
                 }
             });
+        }
+
+        async Task RemoveWorkerTask()
+        {
+            await RemoveWorkerTaskCalculation();
+        }
+
+        private Task RemoveWorkerTaskCalculation()
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        DeleteWorker();
+                        MiningRemoveComboBox.Text = "";
+                    });
+                }
+                catch (Exception)
+                {
+                    dispatcherTimer.Stop();
+                    ServeSideError(ProgressDialog, RemoveWorkerInfo,RemoveWorkerInfoTitle,RemoveWorkerInfo1,RemoveWorkerInfo2);
+                }
+            });
+        }
+
+        private Task ServeSideError(DialogHost Progress, DialogHost InfoBox, TextBlock Title, TextBlock Line1, TextBlock Line2)
+        {
+            return Task.Run(() =>
+            {
+                Progress.IsOpen = false;
+                InfoBox.IsOpen = true;
+                Title.Text = "Server-Side Issue";
+                Line1.Text = "Please try again later.";
+                Line2.Opacity = 0;
+            });
+            
         }
 
         private void btnForceSignup_Click(object sender, RoutedEventArgs e)
@@ -2106,6 +2304,14 @@ namespace CryptoPocket
             AddWorkerWalletCustomID.Text = "";
             AddWorkerName.Text = "";
             AddWorkerElectricity.Text = "(optional) Watts";
+
+            CoinComboBox.Text = "";
+            ComboCoinPercentage = "";
+
+            ComboEditCoinName.Text = "";
+            ComboEditCoinPercentage.Text = "";
+
+            ComboEditWorkerName.Text = "";
         }
 
         private void btnInfo_Click(object sender, RoutedEventArgs e)
@@ -2338,6 +2544,7 @@ namespace CryptoPocket
             }
             else
             {
+                WorkerList.Clear();
                 WorkerList.Add("no data found");
                 AddWorkerName.ItemsSource = WorkerList;
             }
@@ -2347,6 +2554,7 @@ namespace CryptoPocket
         {
             if (WorkerCustomList.Count == 0 || LoggedIn == false)
             {
+                WorkerCustomList.Clear();
                 WorkerCustomList.Add("no data found");
                 WorkerComboBox.ItemsSource = WorkerCustomList;
             }

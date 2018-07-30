@@ -303,5 +303,19 @@ namespace CryptoPocket
         {
             return !NumericalInput.IsMatch(text);
         }
+
+        private void ComboBoxIDs_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (mw.WalletCustomIDs.Count == 0 || MainWindow.LoggedIn == false)
+            {
+                mw.WalletCustomIDs.Clear();
+                mw.WalletCustomIDs.Add("no data found");
+                ComboBoxIDs.ItemsSource = mw.WalletCustomIDs;
+            }
+            else
+            {
+
+            }
+        }
     }
 }

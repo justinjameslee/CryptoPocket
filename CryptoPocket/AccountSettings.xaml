@@ -180,7 +180,7 @@
                                         ItemsSource="{Binding Path=WalletCustomIDs}"
                                         Text="{Binding SelectedTextTwo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         Style="{StaticResource MaterialDesignFloatingHintComboBox}"
-                                        IsEditable="True">
+                                        IsEditable="True" GotFocus="ComboBoxIDs_GotFocus">
                                     </ComboBox>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Width="80" Height="50">
