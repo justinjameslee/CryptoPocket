@@ -184,6 +184,7 @@ namespace CryptoPocket
 
         public List<string> WORKERNAME = new List<string>();
         public List<string> POWER = new List<string>();
+        public List<string> POOL = new List<string>();
 
         private static readonly Regex NumericalInput = new Regex("[^0-9]+");
 
@@ -439,96 +440,85 @@ namespace CryptoPocket
                 }
                 else
                 {
-                    CustomCoin = CoinComboBox.Text;
+                    CustomWorker = WorkerComboBox.Text;
                 }
 
 
-                CoinToggled = false;
+                WorkerToggled = false;
 
-                CustomCoinPrice.Clear();
-                CustomCoin24.Clear();
-                CustomCoin7.Clear();
+                int Index = SelectWorker(WORKERNAME).IndexOf(CustomWorker);
+                string CustomPool = SelectWorker(POOL).ElementAt(Index);
+                Index = SelectMiningSettings(CUSTOMID).IndexOf()
+                string CustomWalletAddress = SelectMiningSettings()
 
-                string url = @"https://api.coinmarketcap.com/v2/ticker/" + Index + "/?convert=BTC";
-
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-
-                request.AutomaticDecompression = DecompressionMethods.GZip;
-
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                using (Stream stream = response.GetResponseStream())
-                using (StreamReader reader = new StreamReader(stream))
+                if (CustomPool == "NiceHash")
                 {
-                    initialCustomCoin = reader.ReadToEnd();
-                    relevantCustomCoin = References.EaseMethods.getBetween(initialCustomCoin, "\"USD\": {", "\"last_updated\"");
-                    CustomCoinA = Regex.Split(relevantCustomCoin, "},");
-                    SepCustomCoinA = CustomCoinA.OfType<string>().ToList();
-                    for (int x = 0; x < SepCustomCoinA.Count; x++)
+                    try
                     {
-                        initialCoinB = SepCustomCoinA[x];
-                        CustomPrice = References.EaseMethods.getBetween(initialCoinB, "price\": ", ",");
-                        CustomChange24 = References.EaseMethods.getBetween(initialCoinB, "percent_change_24h\": ", ",");
-                        CustomChange7 = EaseMethods.RemoveKeepingColumnAndDots(initialCoinB);
-                        RegexSplitChange7 = Regex.Split(CustomChange7, ":");
-                        CustomChange7 = RegexSplitChange7.Last();
-                        CustomCoinPrice.Add(CustomPrice);
-                        CustomCoin24.Add(CustomChange24);
-                        CustomCoin7.Add(CustomChange7);
+                        string url = @"https://api.nicehash.com/api?method=stats.provider.workers&addr=" + strAddWorkerWalletAddress;
+
+                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
+                        request.AutomaticDecompression = DecompressionMethods.GZip;
+
+                        using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                        using (Stream stream = response.GetResponseStream())
+                        using (StreamReader reader = new StreamReader(stream))
+                        {
+                            initialWorkerInfo = reader.ReadToEnd();
+                            if (!initialWorkerInfo.Contains("Incorrect BTC address specified"))
+                            {
+                                relevantWorkerInfo = References.EaseMethods.getBetween(initialWorkerInfo, "workers\":[", "],\"algo\"");
+                                WorkerInfoA = Regex.Split(relevantWorkerInfo, "],");
+                                SepWorkerInfoA = WorkerInfoA.OfType<string>().ToList();
+                                for (int x = 0; x < SepWorkerInfoA.Count; x++)
+                                {
+                                    initialWorker = SepWorkerInfoA[x];
+                                    RegexSplitWorkerInfo = Regex.Split(initialWorker, ",");
+                                    sessWorkerName = References.EaseMethods.getBetween(RegexSplitWorkerInfo[0], "[\"", "\"");
+                                    if (sessWorkerName.Length == 0)
+                                    {
+                                        sessWorkerName = "unknown";
+                                    }
+
+                                    WorkerList.Add(sessWorkerName);
+                                }
+                            }
+                            else
+                            {
+                                WorkerList.Add("no data found");
+                            }
+                        }
                     }
+                    catch (Exception)
+                    {
+                        WorkerList.Add("no data found");
+                    }
+
+                    if (UpdatingCustomCoin == true)
+                    {
+                        int index = CoinBox.SelectedIndex;
+                        CoinBox.Items.RemoveAt(index);
+                        CoinBox.Items.Insert(index, new CustomCoinBox() { CustomCoinName = CustomCoin, CustomCoinFontSize = FontSize, ValueUSD = CustomCoinPrice[0], ValueBTC = CustomCoinPrice[1], PortfolioQuan = "N/A", PortfolioValue = "N/A", Change24Hour = CustomCoin24[Currency], Change7Day = CustomCoin7[Currency], OverallTrend = Change7, Trend24 = Change24, Trend7 = Change7, Currency = Currency });
+                        SessionCustomCoins.Insert(index, CustomCoin);
+                        SessionCustomCoinsCurrency.Insert(index, Convert.ToString(Currency));
+                    }
+                    else
+                    {
+                        CoinBox.Items.Add(new CustomCoinBox() { CustomCoinName = CustomCoin, CustomCoinFontSize = FontSize, ValueUSD = CustomCoinPrice[0], ValueBTC = CustomCoinPrice[1], PortfolioQuan = "N/A", PortfolioValue = "N/A", Change24Hour = CustomCoin24[Currency], Change7Day = CustomCoin7[Currency], OverallTrend = Change7, Trend24 = Change24, Trend7 = Change7, Currency = Currency });
+                        SessionCustomCoins.Add(CustomCoin);
+                        SessionCustomCoinsCurrency.Add(Convert.ToString(Currency));
+                    }
+
+                    CoinComboBox.Text = "";
+                    ComboCoinPercentage.Text = "";
                 }
-
-
-                string FontSize;
-                decimal rounding;
-
-                if (CustomCoin.Length == 5) { FontSize = "14"; }
-                else if (CustomCoin.Length == 6) { FontSize = "12"; }
-                else if (CustomCoin.Length >= 7) { FontSize = "10"; }
-                else { FontSize = "16"; }
-
-                if (CustomCoinPrice[0].Contains("e")) { rounding = Decimal.Parse(CustomCoinPrice[0], System.Globalization.NumberStyles.Float); }
-                else { rounding = Convert.ToDecimal(CustomCoinPrice[0]); }
-                rounding = Math.Round(rounding, 2);
-                CustomCoinPrice[0] = Convert.ToString(rounding);
-
-                if (CustomCoinPrice[1].Contains("e")) { rounding = Decimal.Parse(CustomCoinPrice[1], System.Globalization.NumberStyles.Float); }
-                else { rounding = Convert.ToDecimal(CustomCoinPrice[1]); }
-                rounding = Math.Round(rounding, 8);
-                CustomCoinPrice[1] = Convert.ToString(rounding);
-
-                CustomCoinPrice[0] = CustomCoin + "/USD: $" + CustomCoinPrice[0];
-                CustomCoinPrice[1] = CustomCoin + "/BTC: " + CustomCoinPrice[1];
-
-                int Currency = 0;
-
-                if (ChangeCurrency == "USD")
+                else if (CustomPool == "SiaMining")
                 {
-                    Currency = 0;
-                    ChangeCurrencyMethod(Currency);
-                }
-                else if (ChangeCurrency == "BTC")
-                {
-                    Currency = 1;
-                    ChangeCurrencyMethod(Currency);
+
                 }
 
-                if (UpdatingCustomCoin == true)
-                {
-                    int index = CoinBox.SelectedIndex;
-                    CoinBox.Items.RemoveAt(index);
-                    CoinBox.Items.Insert(index, new CustomCoinBox() { CustomCoinName = CustomCoin, CustomCoinFontSize = FontSize, ValueUSD = CustomCoinPrice[0], ValueBTC = CustomCoinPrice[1], PortfolioQuan = "N/A", PortfolioValue = "N/A", Change24Hour = CustomCoin24[Currency], Change7Day = CustomCoin7[Currency], OverallTrend = Change7, Trend24 = Change24, Trend7 = Change7, Currency = Currency });
-                    SessionCustomCoins.Insert(index, CustomCoin);
-                    SessionCustomCoinsCurrency.Insert(index, Convert.ToString(Currency));
-                }
-                else
-                {
-                    CoinBox.Items.Add(new CustomCoinBox() { CustomCoinName = CustomCoin, CustomCoinFontSize = FontSize, ValueUSD = CustomCoinPrice[0], ValueBTC = CustomCoinPrice[1], PortfolioQuan = "N/A", PortfolioValue = "N/A", Change24Hour = CustomCoin24[Currency], Change7Day = CustomCoin7[Currency], OverallTrend = Change7, Trend24 = Change24, Trend7 = Change7, Currency = Currency });
-                    SessionCustomCoins.Add(CustomCoin);
-                    SessionCustomCoinsCurrency.Add(Convert.ToString(Currency));
-                }
-
-                CoinComboBox.Text = "";
-                ComboCoinPercentage.Text = "";
+                
 
             }
             catch (Exception)
@@ -1335,6 +1325,7 @@ namespace CryptoPocket
 
             WORKERNAME.Clear();
             POWER.Clear();
+            POOL.Clear();
 
             if (this.OpenConnection() == true)
             {
@@ -1345,6 +1336,7 @@ namespace CryptoPocket
                 {
                     WORKERNAME.Add(dataReader["WORKER"] + "");
                     POWER.Add(dataReader["POWER"] + "");
+                    POOL.Add(dataReader["POOL"] + "");
                 }
 
                 dataReader.Close();
@@ -2306,7 +2298,7 @@ namespace CryptoPocket
             AddWorkerElectricity.Text = "(optional) Watts";
 
             CoinComboBox.Text = "";
-            ComboCoinPercentage = "";
+            ComboCoinPercentage.Text = "";
 
             ComboEditCoinName.Text = "";
             ComboEditCoinPercentage.Text = "";
