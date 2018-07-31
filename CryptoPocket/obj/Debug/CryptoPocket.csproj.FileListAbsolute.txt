@@ -290,3 +290,5 @@ C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.csprojAssemblyReference.cache
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\HashRates.txt
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\NHAlgo.txt
+C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\HashRates.txt
+C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\NHAlgo.txt
