@@ -1,0 +1,22 @@
+[
+	{
+		"Ethash": "MH/s",
+		"Groesti": "MH/s",
+		"X11Gost": "MH/s",
+		"CryptoNight": "H/s",
+		"Equihash": "H/s",
+		"Lyra2REv2": "kH/s",
+		"NeoScrypt": "kH/s",
+		"LBRY": "MH/s",
+		"Blake2b": "MH/s",
+		"Blake14r": "MH/s",
+		"Pascal": "MH/s",
+		"Skunkhash": "MH/s",
+		"Nist5": "MH/s",
+		"SHA-256": "TH/s",
+		"Scrypt": "MH/s",
+		"X11": "MH/s",
+		"Quark": "MH/s",
+		"Qubit": "MH/s"
+	}
+]

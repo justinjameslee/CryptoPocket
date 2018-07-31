@@ -213,6 +213,7 @@ namespace CryptoPocket
         public List<string> C_COIN = new List<string>();
         public List<string> C_CURRENCY = new List<string>();
         public List<string> CUSTOMWORKERID = new List<string>();
+        public List<string> CUSTOMWALLETID = new List<string>();
         public List<string> WORKERNAME = new List<string>();
         public List<string> POWER = new List<string>();
         public List<string> POOL = new List<string>();
@@ -503,7 +504,8 @@ namespace CryptoPocket
                 WorkerToggled = false;
                 IndexWorker = SelectWorker(CUSTOMWORKERID).IndexOf(CustomWorker);
                 string CustomPool = SelectWorker(POOL).ElementAt(IndexWorker);
-                string CustomWalletID = SelectWorker(WORKERNAME).ElementAt(IndexWorker);
+                string CustomWalletID = SelectWorker(CUSTOMWALLETID).ElementAt(IndexWorker);
+                string CustomWorkerName = SelectWorker(WORKERNAME).ElementAt(IndexWorker);
                 IndexWorker = SelectMiningSettings(CUSTOMID).IndexOf(CustomWalletID);
                 CustomWalletAddress = SelectMiningSettings(WALLET).ElementAt(IndexWorker);
 
@@ -535,7 +537,7 @@ namespace CryptoPocket
                                     sessWorkerName = "unknown";
                                 }
 
-                                if (sessWorkerName == CustomWorker)
+                                if (sessWorkerName == CustomWorkerName)
                                 {
                                     CustomWorkerData = SepWorkerInfoA[x];
                                     try
@@ -554,7 +556,7 @@ namespace CryptoPocket
                                 }
                             }
 
-                            CustomWorkerData = References.EaseMethods.getBetween(CustomWorkerData, ",{\"", "]");
+                            CustomWorkerData = References.EaseMethods.getBetween(CustomWorkerData, ",{", "]");
                             CustomWorkerData = EaseMethods.RemoveExtraText(CustomWorkerData);
                             SepCustomWorkerData = CustomWorkerData.Split(',');
 
@@ -613,7 +615,8 @@ namespace CryptoPocket
                             DateTime LocalTime = DateTime.UtcNow.ToLocalTime();
                             sessLastUpdated = LocalTime.ToString("r");
                             sessLastUpdated = sessLastUpdated.Substring(0, sessLastUpdated.Length - 4);
-                            sessLastUpdated = sessLastUpdated + " LOCAL";
+
+                            WorkerTimeCalculation();
 
                             if (UpdatingCustomCoin == true)
                             {
@@ -624,7 +627,7 @@ namespace CryptoPocket
                             }
                             else
                             {
-                                CoinBox.Items.Add(new CustomWorkerBox() { CustomWorkerName = CustomWorker, Hashrate = sessHashRateStr, Status = sessStatus, StatusColour = CustomWorkerBrush, LastUpdated = sessLastUpdated, Uptime = sessUpTime, ProfitabilityDay = sessProfitability });
+                                WorkerBox.Items.Add(new CustomWorkerBox() { CustomWorkerName = CustomWorker, Hashrate = sessHashRateStr, Status = sessStatus, StatusColour = CustomWorkerBrush, LastUpdated = sessLastUpdated, Uptime = sessUpTime, ProfitabilityDay = sessProfitability });
                                 SessionCustomWorkers.Add(CustomWorker);
                             }
 
@@ -668,8 +671,8 @@ namespace CryptoPocket
             {
                 initialProfit = reader.ReadToEnd();
                 relevantProfitInfo = References.EaseMethods.getBetween(initialProfit, ":[", "],\"nh_wallet");
-                ProfitInfo = Regex.Split(relevantWorkerInfo, "},{");
-                SepProfitInfo = WorkerInfoA.OfType<string>().ToList();
+                ProfitInfo = Regex.Split(relevantProfitInfo, "},{");
+                SepProfitInfo = ProfitInfo.OfType<string>().ToList();
                 for (int x = 0; x < SepProfitInfo.Count; x++)
                 {
                     if (SepProfitInfo[x] != "")
@@ -747,6 +750,7 @@ namespace CryptoPocket
             }
 
             sessHashRateStr = Convert.ToString(sessHashRate) + " " + HashSuffix;
+            GETWorkerNHProfit();
         }
 
         public void WorkerTimeCalculation()
@@ -814,6 +818,7 @@ namespace CryptoPocket
                     }
                 }
                 sessUpTime = STimeDays + STimeHours + STimeMins + STimeSeconds;
+                sessUpTime.TrimStart();
             }
         }
 
@@ -1523,7 +1528,7 @@ namespace CryptoPocket
 
         public List<string> SelectMiningSettings(List<string> Ref)
         {
-            string query = "SELECT * FROM CryptoMiningSettings";
+            string query = "SELECT * FROM CryptoMiningSettings WHERE ID='" + CurrentID + "'";
 
             ID_MS.Clear();
             CUSTOMID.Clear();
@@ -1611,6 +1616,7 @@ namespace CryptoPocket
             string query = "SELECT * FROM CryptoWorkers WHERE ID='" + CurrentID + "'";
 
             CUSTOMWORKERID.Clear();
+            CUSTOMWALLETID.Clear();
             WORKERNAME.Clear();
             POWER.Clear();
             POOL.Clear();
@@ -1623,6 +1629,7 @@ namespace CryptoPocket
                 while (dataReader.Read())
                 {
                     CUSTOMWORKERID.Add(dataReader["CUSTOMID"] + "");
+                    CUSTOMWALLETID.Add(dataReader["WALLETID"] + "");
                     WORKERNAME.Add(dataReader["WORKER"] + "");
                     POWER.Add(dataReader["POWER"] + "");
                     POOL.Add(dataReader["POOL"] + "");

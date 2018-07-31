@@ -228,8 +228,6 @@ C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CustomWorker.g.cs
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CustomCoin.g.cs
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\MainWindow.g.cs
-C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\ProgressDialog.g.cs
-C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\SignupComplete.g.cs
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\App.g.cs
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\GeneratedInternalTypeHelper.g.cs
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket_MarkupCompile.cache
@@ -281,8 +279,6 @@ C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CustomWorker.baml
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CustomCoin.baml
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\MainWindow.baml
-C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\ProgressDialog.baml
-C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\SignupComplete.baml
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.g.resources
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.Properties.Resources.resources
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.csproj.GenerateResource.cache
@@ -292,3 +288,5 @@ C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoP
 C:\Users\Justin Lee\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\Double Ring-1.5s-200px.gif
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\Double Ring-1.5s-200px.gif
 C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\obj\Debug\CryptoPocket.csprojAssemblyReference.cache
+C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\HashRates.txt
+C:\Users\BlackBook Zero 14\Documents\GitHub\CryptoPocket\CryptoPocket\bin\Debug\Resources\NHAlgo.txt
