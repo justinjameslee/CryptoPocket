@@ -130,18 +130,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="EaseMethods.cs" />
-    <Compile Include="MarketCap.cs" />
     <Compile Include="References.cs" />
     <Compile Include="Settings.cs" />
     <Page Include="AccountSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="CustomWorker.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="CustomCoin.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -156,12 +147,6 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="CustomWorker.xaml.cs">
-      <DependentUpon>CustomWorker.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="CustomCoin.xaml.cs">
-      <DependentUpon>CustomCoin.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -203,11 +188,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\UIAutomationProvider.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Double Ring-1.5s-200px.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

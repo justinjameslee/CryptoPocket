@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace CryptoPocket
-{
-    /// <summary>
-    /// No WPF project is complete without it's own version of this.
-    /// </summary>
+{ 
+    
+    //Class allowing implementation of button for commands.
     public class AnotherCommandImplementation : ICommand
     {
         private readonly Action<object> _execute;

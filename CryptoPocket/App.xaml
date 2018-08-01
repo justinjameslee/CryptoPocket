@@ -6,6 +6,8 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
+            
+            <!-- Resource for Material Design Theme -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
@@ -13,12 +15,16 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Amber.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Dragablz;component/Themes/materialdesign.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Tab Control - dragablz -->
             <Style TargetType="{x:Type dragablz:TabablzControl}" BasedOn="{StaticResource MaterialDesignTabablzControlStyle}" />
+            
+            <!-- Custom SolidColorBrush for Theme Switching -->
             <SolidColorBrush  Color="Black" x:Key="txtColor" />
             <SolidColorBrush Color="Black" x:Key="txtBlack" />
             <SolidColorBrush Color="White" x:Key="bgColor" />
             <SolidColorBrush  Color="WhiteSmoke" x:Key="background" />
-
+            
         </ResourceDictionary>
     </Application.Resources>
 </Application>

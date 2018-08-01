@@ -10,6 +10,7 @@ using System.Windows.Media.Animation;
 using System.Runtime.InteropServices;
 namespace CryptoPocket
 {
+    //Depedency for Palette.cs
     public class PaletteHelper
     {
         public virtual void SetLightDark(bool isDark)

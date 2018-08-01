@@ -23,10 +23,10 @@
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="Auto"
         Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="{DynamicResource MaterialDesignFont}" WindowStyle="None" ResizeMode="NoResize" Loaded="CryptoPocket_Loaded" BorderBrush="#FFAB00" BorderThickness="2,0,2,2" Deactivated="Window_Deactivated" Topmost="False">
+        FontFamily="{DynamicResource MaterialDesignFont}" WindowStyle="None" ResizeMode="NoResize" Loaded="CryptoPocket_Loaded" BorderBrush="#FFAB00" BorderThickness="2,0,2,2" Topmost="False">
 
+    
     <Window.Resources>
-
         <SolidColorBrush x:Key="StandardBorderBrush" Color="#888" />
         <SolidColorBrush x:Key="StandardBackgroundBrush" Color="Black" />
         <SolidColorBrush x:Key="HoverBorderBrush" Color="#DDD" />

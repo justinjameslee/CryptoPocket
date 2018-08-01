@@ -14,7 +14,7 @@
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="Auto"
         Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="{DynamicResource MaterialDesignFont}" Loaded="AccountSettings_Loaded"
+        FontFamily="{DynamicResource MaterialDesignFont}"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Grid>
         <materialDesign:Card Width="400" Height="155" Margin="10,10,10,10" HorizontalAlignment="Left" Padding="15">

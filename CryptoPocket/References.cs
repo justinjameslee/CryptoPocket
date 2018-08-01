@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace CryptoPocket
 {
+    //Universal Reference Instance allowing the grabbing of various functions.
     public static class References
     {
         public static EaseMethods EaseMethods = new EaseMethods();

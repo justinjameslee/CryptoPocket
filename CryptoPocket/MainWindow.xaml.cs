@@ -24,7 +24,6 @@ using System.Windows.Automation.Provider;
 using System.Windows.Threading;
 using System.Net;
 using System.Text.RegularExpressions;
-using QuickType;
 using Newtonsoft.Json.Linq;
 using MaterialDesignThemes.Wpf;
 using System.Collections.ObjectModel;
@@ -60,7 +59,6 @@ namespace CryptoPocket
         public static List<string> SepCoinID = new List<string>();
         public static List<string> SessionCustomCoins = new List<string>();
         public static List<string> SessionCustomCoinsCurrency = new List<string>();
-        public static MainData[] CoinData;
         public static string initialCustomCoin;
         public static string relevantCustomCoin;
         public static string[] CustomCoinA;
@@ -246,78 +244,157 @@ namespace CryptoPocket
 
         }
 
-        private bool OpenConnection()
+        //Checking dependecies for program.
+        private void CryptoPocket_Loaded(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                connection.Open();
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-                return false;
-            }
-        }
+            CreateMustFiles();
 
-        //Close connection
-        private bool CloseConnection()
-        {
-            try
+            if (new FileInfo(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt").Length == 0)
             {
-                connection.Close();
-                return true;
-            }
-            catch (MySqlException ex)
-            {
-                Console.WriteLine(ex.Message);
-                return false;
-            }
-        }
+                string url = @"https://api.coinmarketcap.com/v2/listings/";
 
-        public void DeleteCustomCoins()
-        {
-            string query = "DELETE FROM CryptoCustomCoins WHERE ID='" + CurrentID + "'";
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.ExecuteNonQuery();
-                this.CloseConnection();
-            }
-        }
+                request.AutomaticDecompression = DecompressionMethods.GZip;
 
-        public void DeleteCustomWorkers()
-        {
-            string query = "DELETE FROM CryptoWorkers WHERE ID='" + CurrentID + "'";
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.ExecuteNonQuery();
-                this.CloseConnection();
-            }
-        }
-
-        public void InsertCustomCoins(string Coin, string Currency)
-        {
-            string query = "INSERT INTO CryptoCustomCoins (ID, COIN, CURRENCY) VALUES('" + CurrentID + "', '" + Coin + "', '" + Currency + "')";
-
-            if (this.OpenConnection() == true)
-            {
-                try
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
                 {
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
-                    cmd.ExecuteNonQuery();
-                    this.CloseConnection();
+                    initialCoinList = reader.ReadToEnd();
+                    relevantCoinList = References.EaseMethods.getBetween(initialCoinList, "[", "],");
+                    CoinListA = Regex.Split(relevantCoinList, "},");
+                    SepCoinList = CoinListA.OfType<string>().ToList();
+                    for (int x = 0; x < SepCoinList.Count; x++)
+                    {
+                        initialCoinN = SepCoinList[x];
+                        relevantCoinN = References.EaseMethods.getBetween(initialCoinN, "\",", "\"website");
+                        CoinN = References.EaseMethods.getBetween(relevantCoinN, ": \"", "\",");
+                        SepCoinN.Add(CoinN);
+
+                        relevantCoinID = References.EaseMethods.getBetween(initialCoinN, "id\": ", ",");
+                        SepCoinID.Add(relevantCoinID);
+                    }
                 }
-                catch (Exception)
-                {
-                    MessageBox.Show("Error Saving Data, Data Lost.");
-                }
+
+                File.WriteAllLines(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt", SepCoinN);
+                File.WriteAllLines(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoinsID.txt", SepCoinID);
+                CoinComboBox.ItemsSource = SepCoinN;
+            }
+            else
+            {
+                SepCoinID = File.ReadAllLines(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoinsID.txt").ToList();
+                SepCoinN = File.ReadAllLines(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt").ToList();
+                CoinComboBox.ItemsSource = SepCoinN;
+            }
+
+            if (new FileInfo(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt").Length == 0)
+            {
+                DefaultLogin = true;
+            }
+            else
+            {
+                PreviousUsername = File.ReadAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt");
+                DefaultLogin = false;
+
+
+                DispatcherTimer dispatcherTimer = new DispatcherTimer();
+                dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+                dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
+                dispatcherTimer.Start();
+
             }
         }
 
+        //Functions for scroll viewer.
+        private void CoinBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            ScrollViewer scv = (ScrollViewer)sender;
+            scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta);
+            e.Handled = true;
+        }
+        private void WorkerBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            ScrollViewer scv = (ScrollViewer)sender;
+            scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta);
+            e.Handled = true;
+        }
+
+        //Animation for button appearing in summary boxes.
+        private void WorkerBox_Hover(object sender, MouseEventArgs e)
+        {
+            DoubleAnimation animation = new DoubleAnimation(1, TimeSpan.FromSeconds(0.5));
+            CustomWorkerButton.BeginAnimation(Button.OpacityProperty, animation);
+        }
+        private void WorkerBox_Leave(object sender, MouseEventArgs e)
+        {
+            DoubleAnimation animation = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5));
+            CustomWorkerButton.BeginAnimation(Button.OpacityProperty, animation);
+        }
+        private void CoinBox_Hover(object sender, MouseEventArgs e)
+        {
+            DoubleAnimation animation = new DoubleAnimation(1, TimeSpan.FromSeconds(0.5));
+            CustomCoinButton.BeginAnimation(Button.OpacityProperty, animation);
+        }
+        private void CoinBox_Leave(object sender, MouseEventArgs e)
+        {
+            DoubleAnimation animation = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5));
+            CustomCoinButton.BeginAnimation(Button.OpacityProperty, animation);
+        }
+
+        //Function for clicking the settings.
+        private void Settings_Click(object sender, RoutedEventArgs e)
+        {
+            if (SettingsActive == false)
+            {
+                AccountSettings.Visibility = Visibility.Visible;
+                SettingsActive = true;
+            }
+            else if (SettingsActive == true)
+            {
+                AccountSettings.Visibility = Visibility.Hidden;
+                SettingsActive = false;
+            }
+
+        }
+        private void Header_Click(object sender, MouseButtonEventArgs e)
+        {
+            SettingsActive = false;
+            AccountSettings.Visibility = Visibility.Hidden;
+        }
+
+
+        //Executed when exitting the program.
+        private void btnExit_Click(object sender, RoutedEventArgs e)
+        {
+            if (LoggedIn == true)
+            {
+                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", HeaderUser.Text);
+                DeleteCustomCoins();
+                for (int x = 0; x < SessionCustomCoins.Count; x++)
+                {
+                    string coin = SessionCustomCoins[x];
+                    string Currency = SessionCustomCoinsCurrency[x];
+                    InsertCustomCoins(coin, Currency);
+                }
+                CoinBox.Items.Clear();
+                SessionCustomCoins.Clear();
+                SessionCustomCoinsCurrency.Clear();
+            }
+            else
+            {
+                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", "");
+            }
+            Environment.Exit(1);
+        }
+
+        //Minimmise program.
+        private void btnMinimise_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        //Function for clicking Pie Chart.
         private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
         {
             var chart = (PieChart)chartpoint.ChartView;
@@ -330,6 +407,7 @@ namespace CryptoPocket
             selectedSeries.PushOut = 8;
         }
 
+        //Drag the program.
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -338,6 +416,23 @@ namespace CryptoPocket
             }
         }
 
+        //Hover enter function for buttons.
+        private void HeaderMouseEnter(object sender, MouseEventArgs e)
+        {
+            SolidColorBrush BrushHover = new SolidColorBrush(HoverColour);
+            Button X = (Button)sender;
+            X.Background = BrushHover;
+        }
+
+        //Hover leave function for buttons.
+        private void HeaderMouseLeave(object sender, MouseEventArgs e)
+        {
+            SolidColorBrush BrushUnhover = new SolidColorBrush(UnhoverColour);
+            Button X = (Button)sender;
+            X.Background = BrushUnhover;
+        }
+
+        //Calculating Universal BTC Price.
         public void CalculateUniversalBTCPrice()
         {
             string url = @"https://api.coinmarketcap.com/v2/ticker/1/?convert=BTC";
@@ -365,6 +460,781 @@ namespace CryptoPocket
             UniversalBTCPrice = Convert.ToDouble(CustomPrice);
         }
 
+        //Checking and Creating Required Files
+        public static void CreateMustFiles()
+        {
+            if (!File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt") || !File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt") || !File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoinsID.txt"))
+            {
+                Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session");
+                Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins");
+                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", "");
+                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt", "");
+                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoinsID.txt", "");
+            }
+        }
+
+        //Randomised salt creation.
+        public string CreateSalt(int size)
+        {
+            var rng = new System.Security.Cryptography.RNGCryptoServiceProvider();
+            var buff = new byte[size];
+            rng.GetBytes(buff);
+            return Convert.ToBase64String(buff);
+        }
+
+        //Generating SHA256 HASH.
+        public string GenerateSHA256Hash(string input, string salt)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(input + salt);
+            System.Security.Cryptography.SHA256Managed sha256hashstring =
+                new System.Security.Cryptography.SHA256Managed();
+            byte[] hash = sha256hashstring.ComputeHash(bytes);
+
+            return Convert.ToBase64String(hash);
+        }
+
+        //Check if valid email input.
+        bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        //Prevent dialog for closing.
+        private void DialogHost_OnDialogClosing(object sender, DialogClosingEventArgs eventArgs)
+        {
+            if (Incorrect == true)
+            {
+                eventArgs.Cancel();
+                Incorrect = false;
+            }
+        }
+
+        //IF header is clicked hide the settings.
+        private void Header_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            AccountSettings.Visibility = Visibility.Hidden;
+        }
+
+        //Timer for starting up the program for login screen.
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            ButtonAutomationPeer peer = new ButtonAutomationPeer(AccountSettings.LoginEditButton);
+            IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+            invokeProv.Invoke();
+            (sender as DispatcherTimer).Stop();
+        }
+
+        //Dependency for Summary box toggles.
+        private childItem FindVisualChild<childItem>(DependencyObject obj)
+        where childItem : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+                if (child != null && child is childItem)
+                    return (childItem)child;
+                else
+                {
+                    childItem childOfChild = FindVisualChild<childItem>(child);
+                    if (childOfChild != null)
+                        return childOfChild;
+                }
+            }
+            return null;
+        }
+
+        //Function for checking text.
+        private static bool IsTextAllowed(string text)
+        {
+            return !NumericalInput.IsMatch(text);
+        }
+
+        //Function for allowing numbers only.
+        private void NumbersOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !IsTextAllowed(e.Text);
+        }
+
+        //Flipping values in a summary box.
+        private void CustomCoinToggle_Click(object sender, RoutedEventArgs e)
+        {
+
+            object clicked = (e.OriginalSource as FrameworkElement).DataContext;
+            var lbi = CoinBox.ItemContainerGenerator.ContainerFromItem(clicked) as ListBoxItem;
+            lbi.IsSelected = true;
+
+            try
+            {
+                // Getting the currently selected ListBoxItem
+                // Note that the ListBox must have
+                // IsSynchronizedWithCurrentItem set to True for this to work
+                ListBoxItem CoinBoxItem =
+                    (ListBoxItem)(CoinBox.ItemContainerGenerator.ContainerFromItem(CoinBox.Items.CurrentItem));
+
+                // Getting the ContentPresenter of myListBoxItem
+                ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(CoinBoxItem);
+
+                // Finding textBlock from the DataTemplate that is set on that ContentPresenter
+                DataTemplate myDataTemplate = myContentPresenter.ContentTemplate;
+
+                TextBlock tempPortfolioCoin = (TextBlock)myDataTemplate.FindName("PortfolioCoin", myContentPresenter);
+                TextBlock tempPortfolioCoinV = (TextBlock)myDataTemplate.FindName("PortfolioCoinV", myContentPresenter);
+                TextBlock temptxt24Hours = (TextBlock)myDataTemplate.FindName("txt24Hours", myContentPresenter);
+                TextBlock temptxt7Days = (TextBlock)myDataTemplate.FindName("txt7Days", myContentPresenter);
+                TextBlock temptxt24HoursV = (TextBlock)myDataTemplate.FindName("txt24HoursV", myContentPresenter);
+                TextBlock temptxt7DaysV = (TextBlock)myDataTemplate.FindName("txt7DaysV", myContentPresenter);
+                MaterialDesignThemes.Wpf.PackIcon tempIcon24Hours = (MaterialDesignThemes.Wpf.PackIcon)myDataTemplate.FindName("Icon24Hours", myContentPresenter);
+                MaterialDesignThemes.Wpf.PackIcon tempIcon7Days = (MaterialDesignThemes.Wpf.PackIcon)myDataTemplate.FindName("Icon7Days", myContentPresenter);
+                TextBlock tempToggleCoinText = (TextBlock)myDataTemplate.FindName("ToggleCoinText", myContentPresenter);
+
+                if (CoinToggled == false)
+                {
+                    tempPortfolioCoin.Opacity = 100;
+                    tempPortfolioCoinV.Opacity = 100;
+                    temptxt24Hours.Opacity = 0;
+                    temptxt7Days.Opacity = 0;
+                    temptxt24HoursV.Opacity = 0;
+                    temptxt7DaysV.Opacity = 0;
+                    tempIcon24Hours.Opacity = 0;
+                    tempIcon7Days.Opacity = 0;
+                    CoinToggled = true;
+                    tempToggleCoinText.Text = "Portfolio Value";
+
+                }
+                else if (CoinToggled == true)
+                {
+                    tempPortfolioCoin.Opacity = 0;
+                    tempPortfolioCoinV.Opacity = 0;
+                    temptxt24Hours.Opacity = 100;
+                    temptxt7Days.Opacity = 100;
+                    temptxt24HoursV.Opacity = 100;
+                    temptxt7DaysV.Opacity = 100;
+                    tempIcon24Hours.Opacity = 100;
+                    tempIcon7Days.Opacity = 100;
+                    CoinToggled = false;
+                    tempToggleCoinText.Text = "Recent Change";
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
+        }
+        private void CustomWorkerToggle_Click(object sender, RoutedEventArgs e)
+        {
+
+            object clicked = (e.OriginalSource as FrameworkElement).DataContext;
+            var lbi = WorkerBox.ItemContainerGenerator.ContainerFromItem(clicked) as ListBoxItem;
+            lbi.IsSelected = true;
+
+            try
+            {
+                // Getting the currently selected ListBoxItem
+                // Note that the ListBox must have
+                // IsSynchronizedWithCurrentItem set to True for this to work
+                ListBoxItem WorkerBoxItem =
+                    (ListBoxItem)(WorkerBox.ItemContainerGenerator.ContainerFromItem(WorkerBox.Items.CurrentItem));
+
+                // Getting the ContentPresenter of myListBoxItem
+                ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(WorkerBoxItem);
+
+                // Finding textBlock from the DataTemplate that is set on that ContentPresenter
+                DataTemplate myDataTemplate = myContentPresenter.ContentTemplate;
+
+                TextBlock tempProfitabilityDay = (TextBlock)myDataTemplate.FindName("ProfitabilityDay", myContentPresenter);
+                TextBlock tempProfitabilityDayAlt = (TextBlock)myDataTemplate.FindName("ProfitabilityDayAlt", myContentPresenter);
+
+                if (WorkerToggled == true)
+                {
+                    tempProfitabilityDay.Opacity = 100;
+                    tempProfitabilityDayAlt.Opacity = 0;
+                    WorkerToggled = false;
+                }
+                else if (WorkerToggled == false)
+                {
+                    tempProfitabilityDay.Opacity = 0;
+                    tempProfitabilityDayAlt.Opacity = 100;
+                    WorkerToggled = true;
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
+        }
+
+
+        //2nd Timer for loading screens.
+        private void LoadingTimer_Tick(object sender, EventArgs e)
+        {
+            ProgressDialog.IsOpen = false;
+            (sender as DispatcherTimer).Stop();
+        }
+
+
+        //Function for My SQL Functions
+
+
+        //Attempts to connect to MySQL Database.
+        //Returning boolean value.
+        private bool OpenConnection()
+        {
+            try
+            {
+                connection.Open();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                return false;
+            }
+        }
+
+        //Attempts to close the connection to MySQL Database.
+        private bool CloseConnection()
+        {
+            try
+            {
+                connection.Close();
+                return true;
+            }
+            catch (MySqlException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
+
+        //Select statements
+        public List<string> Select(List<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoUsers";
+
+            ID.Clear();
+            EMAIL.Clear();
+            USERNAME.Clear();
+            HASH.Clear();
+            SALT.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+                while (dataReader.Read())
+                {
+                    ID.Add(dataReader["ID"] + "");
+                    EMAIL.Add(dataReader["EMAIL"] + "");
+                    USERNAME.Add(dataReader["USERNAME"] + "");
+                    HASH.Add(dataReader["HASH"] + "");
+                    SALT.Add(dataReader["SALT"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+        public List<string> SelectMember(List<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoMembership WHERE ID='" + MainWindow.CurrentID + "'";
+
+            ID_M.Clear();
+            MEMBERSHIP.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    ID_M.Add(dataReader["ID"] + "");
+                    MEMBERSHIP.Add(dataReader["MEMBERSHIP"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+        public List<string> SelectMiningSettings(List<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoMiningSettings WHERE ID='" + CurrentID + "'";
+
+            ID_MS.Clear();
+            CUSTOMID.Clear();
+            WALLET.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    ID_MS.Add(dataReader["ID"] + "");
+                    CUSTOMID.Add(dataReader["CUSTOMID"] + "");
+                    WALLET.Add(dataReader["WALLET"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+        public ObservableCollection<string> SelectMiningSettingsForUser(ObservableCollection<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoMiningSettings WHERE ID='" + CurrentID + "'";
+
+            WalletCustomIDs.Clear();
+            WalletCustomAddresses.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    WalletCustomIDs.Add(dataReader["CUSTOMID"] + "");
+                    WalletCustomAddresses.Add(dataReader["WALLET"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+        public List<string> SelectWorker(List<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoWorkers WHERE ID='" + CurrentID + "'";
+
+            CUSTOMWORKERID.Clear();
+            CUSTOMWALLETID.Clear();
+            WORKERNAME.Clear();
+            POWER.Clear();
+            POOL.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    CUSTOMWORKERID.Add(dataReader["CUSTOMID"] + "");
+                    CUSTOMWALLETID.Add(dataReader["WALLETID"] + "");
+                    WORKERNAME.Add(dataReader["WORKER"] + "");
+                    POWER.Add(dataReader["POWER"] + "");
+                    POOL.Add(dataReader["POOL"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+        public ObservableCollection<string> SelectWorkerForUser(ObservableCollection<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoWorkers WHERE ID='" + CurrentID + "'";
+
+            WorkerCustomList.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    WorkerCustomList.Add(dataReader["CUSTOMID"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+        public List<string> SelectElectricity(List<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoElectricity WHERE ID='" + CurrentID + "'";
+
+            AccountSettings.ID_ELEC.Clear();
+            AccountSettings.ELECTRICITYRATE.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    AccountSettings.ID_ELEC.Add(dataReader["ID"] + "");
+                    AccountSettings.ELECTRICITYRATE.Add(dataReader["ELECTRICITY"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+        public List<string> SelectCustomCoins(List<string> Ref)
+        {
+            string query = "SELECT * FROM CryptoCustomCoins WHERE ID='" + Convert.ToString(MainWindow.CurrentID) + "'";
+
+            ID_CC.Clear();
+            C_COIN.Clear();
+            C_CURRENCY.Clear();
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    ID_CC.Add(dataReader["ID"] + "");
+                    C_COIN.Add(dataReader["COIN"] + "");
+                    C_CURRENCY.Add(dataReader["CURRENCY"] + "");
+                }
+
+                dataReader.Close();
+                this.CloseConnection();
+                return Ref;
+            }
+            else
+            {
+                return Ref;
+            }
+        }
+
+
+        //Insert Statements
+        public void Insert()
+        {
+            string query = "INSERT INTO CryptoUsers (EMAIL, USERNAME, HASH, SALT) VALUES('" + EmailUp + "', '" + UserUp + "', '" + hashedpassword + "', '" + salt + "')";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Prepare();
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+
+            CurrentID = Convert.ToInt32(Select(ID).ElementAt((Select(EMAIL).IndexOf(EmailUp))));
+        }
+        public void InsertMember()
+        {
+            string query = "INSERT INTO CryptoMembership (ID, MEMBERSHIP) VALUES('" + CurrentID + "', '" + AccountSettings.FreeMembership + "')";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+        private Task InsertMiningSettings()
+        {
+            return Task.Run(() =>
+            {
+                string query = "INSERT INTO CryptoMiningSettings (ID, CUSTOMID, WALLET) VALUES('" + CurrentID + "', '" + SaveCustomID + "', '" + SaveWalletAddress + "')";
+
+                if (OpenConnection() == true)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand(query, connection);
+                        cmd.ExecuteNonQuery();
+                        this.CloseConnection();
+
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            if (WalletCustomIDs[0] == "no data found")
+                            {
+                                WalletCustomIDs.Clear();
+                            }
+                            WalletCustomIDs.Add(SaveCustomID);
+                            AccountSettings.ComboBoxIDs.ItemsSource = WalletCustomIDs;
+                        });
+                    }
+                    catch (Exception)
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            ProgressDialog.IsOpen = false;
+                            SaveWalletIDInfo.IsOpen = true;
+                        });
+
+                    }
+                }
+            });
+        }
+        private Task InsertWorker()
+        {
+            return Task.Run(() =>
+            {
+                string query = "INSERT INTO CryptoWorkers (ID, CUSTOMID, WALLETID, WORKER, POWER, POOL) VALUES('" + CurrentID + "', '" + strAddWorkerNameID + "', '" + strAddWorkerWalletID + "', '" + strAddWorkerName + "', '" + strAddWorkerElectricity + "', + '" + strAddWorkerPool + "')";
+
+                if (OpenConnection() == true)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand(query, connection);
+                        cmd.ExecuteNonQuery();
+                        this.CloseConnection();
+
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            WorkerCustomList.Add(strAddWorkerNameID);
+                            WorkerComboBox.ItemsSource = WorkerCustomList;
+                            MiningRemoveComboBox.ItemsSource = WorkerCustomList;
+                        });
+                    }
+                    catch (Exception)
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            ProgressDialog.IsOpen = false;
+                            AddWorkerInfo.IsOpen = true;
+                        });
+
+                    }
+                }
+            });
+        }
+        public void InsertElectricity()
+        {
+            string query = "INSERT INTO CryptoElectricity (ID, ELECTRICITY) VALUES('" + CurrentID + "', '" + AccountSettings.ElectricitiyRate + "')";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+        public void InsertCustomCoins(string Coin, string Currency)
+        {
+            string query = "INSERT INTO CryptoCustomCoins (ID, COIN, CURRENCY) VALUES('" + CurrentID + "', '" + Coin + "', '" + Currency + "')";
+
+            if (this.OpenConnection() == true)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.ExecuteNonQuery();
+                    this.CloseConnection();
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Error Saving Data, Data Lost.");
+                }
+            }
+        }
+
+
+
+        //Delete Statements
+        public void DeleteCustomCoins()
+        {
+            string query = "DELETE FROM CryptoCustomCoins WHERE ID='" + CurrentID + "'";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+
+        public void DeleteCustomWorkers()
+        {
+            string query = "DELETE FROM CryptoWorkers WHERE ID='" + CurrentID + "'";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+        private Task DeleteWorker()
+        {
+            return Task.Run(() =>
+            {
+                string query = "DELETE FROM CryptoWorkers WHERE ID='" + CurrentID + "' AND CUSTOMID='" + strRemoveWorkerName + "'";
+
+                if (OpenConnection() == true)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand(query, connection);
+                        cmd.ExecuteNonQuery();
+                        this.CloseConnection();
+
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            WorkerCustomList.Remove(strRemoveWorkerName);
+                            WorkerComboBox.ItemsSource = WorkerCustomList;
+                            MiningRemoveComboBox.ItemsSource = WorkerCustomList;
+
+                            //DeleteCustomWorkers();
+                            //for (int x = 0; x < SessionCustomCoins.Count; x++)
+                            //{
+                            //    string coin = SessionCustomCoins[x];
+                            //    string Currency = SessionCustomCoinsCurrency[x];
+                            //    InsertCustomCoins(coin, Currency);
+                            //}
+                            //CoinBox.Items.Clear();
+                            //SessionCustomCoins.Clear();
+                            //SessionCustomCoinsCurrency.Clear();
+                        });
+                    }
+                    catch (Exception)
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            ProgressDialog.IsOpen = false;
+                            RemoveWorkerInfo.IsOpen = true;
+                        });
+
+                    }
+                }
+            });
+
+        }
+        public void DeleteMiningSettings()
+        {
+            string query = "DELETE FROM CryptoMiningSettings WHERE ID='" + CurrentID + "'AND CUSTOMID='" + RemoveCustomID + "'";
+
+            if (this.OpenConnection() == true)
+            {
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteNonQuery();
+                this.CloseConnection();
+            }
+        }
+
+
+
+        //Summary Box Custom Coin
+
+
+        private void btnCustomCoin_Click(object sender, RoutedEventArgs e)
+        {
+            if (CoinComboBox.Text.Length != 0 && SepCoinN.Contains(CoinComboBox.Text))
+            {
+                UpdatingCustomCoin = false;
+                CustomCoinCalculation();
+                Incorrect = false;
+            }
+            else
+            {
+                Incorrect = true;
+            }
+        }
+        public void ChangeCurrencyMethod(int Y)
+        {
+            if (Convert.ToDouble(CustomCoin24[Y]) < 0) { Change24 = "TrendingDown"; }
+            else if (Convert.ToDouble(CustomCoin24[Y]) > 0) { Change24 = "TrendingUp"; }
+            else { Change24 = "TrendingNeutral"; }
+
+            if (Convert.ToDouble(CustomCoin7[Y]) < 0) { Change7 = "TrendingDown"; }
+            else if (Convert.ToDouble(CustomCoin7[Y]) > 0) { Change7 = "TrendingUp"; }
+            else { Change7 = "TrendingNeutral"; }
+
+            CustomCoin24[Y] = CustomCoin24[Y] + "%";
+            CustomCoin7[Y] = CustomCoin7[Y] + "%";
+        }
+
+        //Double Click event to edit box.
+        private void CustomCoinDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            EditCustomCoin.IsOpen = true;
+            try
+            {
+                ComboEditCoinName.ItemsSource = SepCoinN;
+                ComboEditCoinName.Text = ((CustomCoinBox)CoinBox.SelectedItem).CustomCoinName;
+                if (((CustomCoinBox)CoinBox.SelectedItem).Currency == 0)
+                {
+                    ComboEditCoinPercentage.Text = "USD";
+                }
+                else
+                {
+                    ComboEditCoinPercentage.Text = "BTC";
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
+        }
+        private void btnDeleteCustomCoin_Click(object sender, RoutedEventArgs e)
+        {
+            int index = CoinBox.SelectedIndex;
+            CoinBox.Items.RemoveAt(index);
+            SessionCustomCoins.RemoveAt(index);
+            SessionCustomCoinsCurrency.RemoveAt(index);
+            Incorrect = false;
+        }
+        private void btnUpdateCustomCoin_Click(object sender, RoutedEventArgs e)
+        {
+            if (ComboEditCoinName.Text.Length != 0)
+            {
+                UpdatingCustomCoin = true;
+                CustomCoinCalculation();
+                Incorrect = false;
+            }
+            else
+            {
+                Incorrect = true;
+            }
+        }
+
+        //Calculation of custom coin for summary box.
         public void CustomCoinCalculation()
         {
             try
@@ -486,6 +1356,27 @@ namespace CryptoPocket
             }
         }
 
+
+
+        //Summary Box for Custom Worker
+
+
+
+        private void btnCustomWorker_Click(object sender, RoutedEventArgs e)
+        {
+            if (WorkerComboBox.Text.Length != 0 && WorkerCustomList.Contains(WorkerComboBox.Text))
+            {
+                UpdatingCustomWorker = false;
+                CustomWorkerCalculation();
+                Incorrect = false;
+            }
+            else
+            {
+                Incorrect = true;
+            }
+        }
+
+        //Calculation of custom worker
         public void CustomWorkerCalculation()
         {
             try
@@ -664,7 +1555,40 @@ namespace CryptoPocket
                 Incorrect = true;
             }
         }
+        public void GETWorkerInfoNH()
+        {
+            UpTimeBeforeCalc = UpTimeBeforeCalc * 60;
 
+            StreamReader NHAlgoReader = new StreamReader(@"Resources\NHAlgo.txt");
+            {
+                while ((lineNHAlgo = NHAlgoReader.ReadLine()) != null)
+                {
+                    if (lineNHAlgo.Contains(sessAlgo))
+                    {
+                        sessAlgo = lineNHAlgo;
+                        sessAlgo = References.EaseMethods.getBetween(sessAlgo, ": \"", "\"");
+                        break;
+                    }
+                }
+            }
+
+            StreamReader HashRateReader = new StreamReader(@"Resources\HashRates.txt");
+            {
+                while ((lineHashRate = HashRateReader.ReadLine()) != null)
+                {
+                    if (lineHashRate.Contains(sessAlgo))
+                    {
+                        HashSuffix = lineHashRate;
+                        HashSuffix = References.EaseMethods.getBetween(HashSuffix, ": \"", "\"");
+                        break;
+                    }
+                }
+            }
+
+            sessHashRateStr = Convert.ToString(sessHashRate) + " " + HashSuffix;
+            GETWorkerNHProfit();
+
+        }
         public void GETWorkerNHProfit()
         {
 
@@ -728,41 +1652,6 @@ namespace CryptoPocket
                 sessProfitability = "BTC/DAY: " + sessProfitability;
             }
         }
-
-        public void GETWorkerInfoNH()
-        {
-            UpTimeBeforeCalc = UpTimeBeforeCalc * 60;
-
-            StreamReader NHAlgoReader = new StreamReader(@"Resources\NHAlgo.txt");
-            {
-                while ((lineNHAlgo = NHAlgoReader.ReadLine()) != null)
-                {
-                    if (lineNHAlgo.Contains(sessAlgo))
-                    {
-                        sessAlgo = lineNHAlgo;
-                        sessAlgo = References.EaseMethods.getBetween(sessAlgo, ": \"", "\"");
-                        break;
-                    }
-                }
-            }
-
-            StreamReader HashRateReader = new StreamReader(@"Resources\HashRates.txt");
-            {
-                while ((lineHashRate = HashRateReader.ReadLine()) != null)
-                {
-                    if (lineHashRate.Contains(sessAlgo))
-                    {
-                        HashSuffix = lineHashRate;
-                        HashSuffix = References.EaseMethods.getBetween(HashSuffix, ": \"", "\"");
-                        break;
-                    }
-                }
-            }
-
-            sessHashRateStr = Convert.ToString(sessHashRate) + " " + HashSuffix;
-            GETWorkerNHProfit();
-        }
-
         public void WorkerTimeCalculation()
         {
             if (UpTimeBeforeCalc == 0)
@@ -840,893 +1729,8 @@ namespace CryptoPocket
             }
         }
 
-        private void btnCustomCoin_Click(object sender, RoutedEventArgs e)
-        {
-            if (CoinComboBox.Text.Length != 0 && SepCoinN.Contains(CoinComboBox.Text))
-            {
-                UpdatingCustomCoin = false;
-                CustomCoinCalculation();
-                Incorrect = false;
-            }
-            else
-            {
-                Incorrect = true;
-            }
-        }
 
-        private void btnCustomWorker_Click(object sender, RoutedEventArgs e)
-        {
-            if (WorkerComboBox.Text.Length != 0 && WorkerCustomList.Contains(WorkerComboBox.Text))
-            {
-                UpdatingCustomWorker = false;
-                CustomWorkerCalculation();
-                Incorrect = false;
-            }
-            else
-            {
-                Incorrect = true;
-            }
-        }
-
-        public void ChangeCurrencyMethod(int Y)
-        {
-            if (Convert.ToDouble(CustomCoin24[Y]) < 0) { Change24 = "TrendingDown"; }
-            else if (Convert.ToDouble(CustomCoin24[Y]) > 0) { Change24 = "TrendingUp"; }
-            else { Change24 = "TrendingNeutral"; }
-
-            if (Convert.ToDouble(CustomCoin7[Y]) < 0) { Change7 = "TrendingDown"; }
-            else if (Convert.ToDouble(CustomCoin7[Y]) > 0) { Change7 = "TrendingUp"; }
-            else { Change7 = "TrendingNeutral"; }
-
-            CustomCoin24[Y] = CustomCoin24[Y] + "%";
-            CustomCoin7[Y] = CustomCoin7[Y] + "%";
-        }
-
-        private void CustomCoinDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            EditCustomCoin.IsOpen = true;
-            try
-            {
-                ComboEditCoinName.ItemsSource = SepCoinN;
-                ComboEditCoinName.Text = ((CustomCoinBox)CoinBox.SelectedItem).CustomCoinName;
-                if (((CustomCoinBox)CoinBox.SelectedItem).Currency == 0)
-                {
-                    ComboEditCoinPercentage.Text = "USD";
-                }
-                else
-                {
-                    ComboEditCoinPercentage.Text = "BTC";
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-        }
-
-        private void btnDeleteCustomCoin_Click(object sender, RoutedEventArgs e)
-        {
-            int index = CoinBox.SelectedIndex;
-            CoinBox.Items.RemoveAt(index);
-            SessionCustomCoins.RemoveAt(index);
-            SessionCustomCoinsCurrency.RemoveAt(index);
-            Incorrect = false;
-        }
-
-        private void btnUpdateCustomCoin_Click(object sender, RoutedEventArgs e)
-        {
-            if (ComboEditCoinName.Text.Length != 0)
-            {
-                UpdatingCustomCoin = true;
-                CustomCoinCalculation();
-                Incorrect = false;
-            }
-            else
-            {
-                Incorrect = true;
-            }
-        }
-
-        private void DialogHost_OnDialogClosing(object sender, DialogClosingEventArgs eventArgs)
-        {
-            if (Incorrect == true)
-            {
-                eventArgs.Cancel();
-                Incorrect = false;
-            }
-        }
-
-
-
-        private void Header_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            AccountSettings.Visibility = Visibility.Hidden;
-        }
-
-
-
-        private void CryptoPocket_Loaded(object sender, RoutedEventArgs e)
-        {
-            CreateMustFiles();
-
-            if (new FileInfo(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt").Length == 0)
-            {
-                string url = @"https://api.coinmarketcap.com/v2/listings/";
-
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-
-                request.AutomaticDecompression = DecompressionMethods.GZip;
-
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                using (Stream stream = response.GetResponseStream())
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    initialCoinList = reader.ReadToEnd();
-                    relevantCoinList = References.EaseMethods.getBetween(initialCoinList, "[", "],");
-                    CoinListA = Regex.Split(relevantCoinList, "},");
-                    SepCoinList = CoinListA.OfType<string>().ToList();
-                    for (int x = 0; x < SepCoinList.Count; x++)
-                    {
-                        initialCoinN = SepCoinList[x];
-                        relevantCoinN = References.EaseMethods.getBetween(initialCoinN, "\",", "\"website");
-                        CoinN = References.EaseMethods.getBetween(relevantCoinN, ": \"", "\",");
-                        SepCoinN.Add(CoinN);
-
-                        relevantCoinID = References.EaseMethods.getBetween(initialCoinN, "id\": ", ",");
-                        SepCoinID.Add(relevantCoinID);
-                    }
-                }
-
-                File.WriteAllLines(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt", SepCoinN);
-                File.WriteAllLines(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoinsID.txt", SepCoinID);
-                CoinComboBox.ItemsSource = SepCoinN;
-            }
-            else
-            {
-                SepCoinID = File.ReadAllLines(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoinsID.txt").ToList();
-                SepCoinN = File.ReadAllLines(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt").ToList();
-                CoinComboBox.ItemsSource = SepCoinN;
-            }
-
-            if (new FileInfo(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt").Length == 0)
-            {
-                DefaultLogin = true;
-            }
-            else
-            {
-                PreviousUsername = File.ReadAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt");
-                DefaultLogin = false;
-
-
-                DispatcherTimer dispatcherTimer = new DispatcherTimer();
-                dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
-                dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
-                dispatcherTimer.Start();
-
-            }
-        }
-
-        private void dispatcherTimer_Tick(object sender, EventArgs e)
-        {
-            ButtonAutomationPeer peer = new ButtonAutomationPeer(AccountSettings.LoginEditButton);
-            IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
-            invokeProv.Invoke();
-            (sender as DispatcherTimer).Stop();
-        }
-
-        private void CustomCoinToggle_Click(object sender, RoutedEventArgs e)
-        {
-
-            object clicked = (e.OriginalSource as FrameworkElement).DataContext;
-            var lbi = CoinBox.ItemContainerGenerator.ContainerFromItem(clicked) as ListBoxItem;
-            lbi.IsSelected = true;
-
-            try
-            {
-                // Getting the currently selected ListBoxItem
-                // Note that the ListBox must have
-                // IsSynchronizedWithCurrentItem set to True for this to work
-                ListBoxItem CoinBoxItem =
-                    (ListBoxItem)(CoinBox.ItemContainerGenerator.ContainerFromItem(CoinBox.Items.CurrentItem));
-
-                // Getting the ContentPresenter of myListBoxItem
-                ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(CoinBoxItem);
-
-                // Finding textBlock from the DataTemplate that is set on that ContentPresenter
-                DataTemplate myDataTemplate = myContentPresenter.ContentTemplate;
-
-                TextBlock tempPortfolioCoin = (TextBlock)myDataTemplate.FindName("PortfolioCoin", myContentPresenter);
-                TextBlock tempPortfolioCoinV = (TextBlock)myDataTemplate.FindName("PortfolioCoinV", myContentPresenter);
-                TextBlock temptxt24Hours = (TextBlock)myDataTemplate.FindName("txt24Hours", myContentPresenter);
-                TextBlock temptxt7Days = (TextBlock)myDataTemplate.FindName("txt7Days", myContentPresenter);
-                TextBlock temptxt24HoursV = (TextBlock)myDataTemplate.FindName("txt24HoursV", myContentPresenter);
-                TextBlock temptxt7DaysV = (TextBlock)myDataTemplate.FindName("txt7DaysV", myContentPresenter);
-                MaterialDesignThemes.Wpf.PackIcon tempIcon24Hours = (MaterialDesignThemes.Wpf.PackIcon)myDataTemplate.FindName("Icon24Hours", myContentPresenter);
-                MaterialDesignThemes.Wpf.PackIcon tempIcon7Days = (MaterialDesignThemes.Wpf.PackIcon)myDataTemplate.FindName("Icon7Days", myContentPresenter);
-                TextBlock tempToggleCoinText = (TextBlock)myDataTemplate.FindName("ToggleCoinText", myContentPresenter);
-
-                if (CoinToggled == false)
-                {
-                    tempPortfolioCoin.Opacity = 100;
-                    tempPortfolioCoinV.Opacity = 100;
-                    temptxt24Hours.Opacity = 0;
-                    temptxt7Days.Opacity = 0;
-                    temptxt24HoursV.Opacity = 0;
-                    temptxt7DaysV.Opacity = 0;
-                    tempIcon24Hours.Opacity = 0;
-                    tempIcon7Days.Opacity = 0;
-                    CoinToggled = true;
-                    tempToggleCoinText.Text = "Portfolio Value";
-
-                }
-                else if (CoinToggled == true)
-                {
-                    tempPortfolioCoin.Opacity = 0;
-                    tempPortfolioCoinV.Opacity = 0;
-                    temptxt24Hours.Opacity = 100;
-                    temptxt7Days.Opacity = 100;
-                    temptxt24HoursV.Opacity = 100;
-                    temptxt7DaysV.Opacity = 100;
-                    tempIcon24Hours.Opacity = 100;
-                    tempIcon7Days.Opacity = 100;
-                    CoinToggled = false;
-                    tempToggleCoinText.Text = "Recent Change";
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-
-        }
-
-        private void CustomWorkerToggle_Click(object sender, RoutedEventArgs e)
-        {
-
-            object clicked = (e.OriginalSource as FrameworkElement).DataContext;
-            var lbi = WorkerBox.ItemContainerGenerator.ContainerFromItem(clicked) as ListBoxItem;
-            lbi.IsSelected = true;
-
-            try
-            {
-                // Getting the currently selected ListBoxItem
-                // Note that the ListBox must have
-                // IsSynchronizedWithCurrentItem set to True for this to work
-                ListBoxItem WorkerBoxItem =
-                    (ListBoxItem)(WorkerBox.ItemContainerGenerator.ContainerFromItem(WorkerBox.Items.CurrentItem));
-
-                // Getting the ContentPresenter of myListBoxItem
-                ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(WorkerBoxItem);
-
-                // Finding textBlock from the DataTemplate that is set on that ContentPresenter
-                DataTemplate myDataTemplate = myContentPresenter.ContentTemplate;
-
-                TextBlock tempProfitabilityDay = (TextBlock)myDataTemplate.FindName("ProfitabilityDay", myContentPresenter);
-                TextBlock tempProfitabilityDayAlt = (TextBlock)myDataTemplate.FindName("ProfitabilityDayAlt", myContentPresenter);
-
-                if (WorkerToggled == true)
-                {
-                    tempProfitabilityDay.Opacity = 100;
-                    tempProfitabilityDayAlt.Opacity = 0;
-                    WorkerToggled = false;
-                }
-                else if (WorkerToggled == false)
-                {
-                    tempProfitabilityDay.Opacity = 0;
-                    tempProfitabilityDayAlt.Opacity = 100;
-                    WorkerToggled = true;
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-
-        }
-
-        private childItem FindVisualChild<childItem>(DependencyObject obj)
-            where childItem : DependencyObject
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null && child is childItem)
-                    return (childItem)child;
-                else
-                {
-                    childItem childOfChild = FindVisualChild<childItem>(child);
-                    if (childOfChild != null)
-                        return childOfChild;
-                }
-            }
-            return null;
-        }
-
-        private void CoinBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            ScrollViewer scv = (ScrollViewer)sender;
-            scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta);
-            e.Handled = true;
-        }
-
-        private void WorkerBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            ScrollViewer scv = (ScrollViewer)sender;
-            scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta);
-            e.Handled = true;
-        }
-
-        private void WorkerBox_Hover(object sender, MouseEventArgs e)
-        {
-            DoubleAnimation animation = new DoubleAnimation(1, TimeSpan.FromSeconds(0.5));
-            CustomWorkerButton.BeginAnimation(Button.OpacityProperty, animation);
-        }
-
-        private void WorkerBox_Leave(object sender, MouseEventArgs e)
-        {
-            DoubleAnimation animation = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5));
-            CustomWorkerButton.BeginAnimation(Button.OpacityProperty, animation);
-        }
-
-        private void CoinBox_Hover(object sender, MouseEventArgs e)
-        {
-            DoubleAnimation animation = new DoubleAnimation(1, TimeSpan.FromSeconds(0.5));
-            CustomCoinButton.BeginAnimation(Button.OpacityProperty, animation);
-        }
-
-        private void CoinBox_Leave(object sender, MouseEventArgs e)
-        {
-            DoubleAnimation animation = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5));
-            CustomCoinButton.BeginAnimation(Button.OpacityProperty, animation);
-        }
-
-        private void Settings_Click(object sender, RoutedEventArgs e)
-        {
-            if (SettingsActive == false)
-            {
-                AccountSettings.Visibility = Visibility.Visible;
-                SettingsActive = true;
-            }
-            else if (SettingsActive == true)
-            {
-                AccountSettings.Visibility = Visibility.Hidden;
-                SettingsActive = false;
-            }
-
-        }
-
-        private void Header_Click(object sender, MouseButtonEventArgs e)
-        {
-            SettingsActive = false;
-            AccountSettings.Visibility = Visibility.Hidden;
-        }
-
-        private void btnExit_Click(object sender, RoutedEventArgs e)
-        {
-            if (LoggedIn == true)
-            {
-                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", HeaderUser.Text);
-                DeleteCustomCoins();
-                for (int x = 0; x < SessionCustomCoins.Count; x++)
-                {
-                    string coin = SessionCustomCoins[x];
-                    string Currency = SessionCustomCoinsCurrency[x];
-                    InsertCustomCoins(coin, Currency);
-                }
-                CoinBox.Items.Clear();
-                SessionCustomCoins.Clear();
-                SessionCustomCoinsCurrency.Clear();
-            }
-            else
-            {
-                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", "");
-            }
-            Environment.Exit(1);
-        }
-
-        private void btnMinimise_Click(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        private void Window_Deactivated(object sender, EventArgs e)
-        {
-
-        }
-
-        //Checking and Creating Required Files
-        public static void CreateMustFiles()
-        {
-            if (!File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt") || !File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt") || !File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoinsID.txt"))
-            {
-                Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session");
-                Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins");
-                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt", "");
-                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt", "");
-                File.WriteAllText(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoinsID.txt", "");
-            }
-        }
-
-        private void HeaderMouseEnter(object sender, MouseEventArgs e)
-        {
-            SolidColorBrush BrushHover = new SolidColorBrush(HoverColour);
-            Button X = (Button)sender;
-            X.Background = BrushHover;
-        }
-
-        private void HeaderMouseLeave(object sender, MouseEventArgs e)
-        {
-            SolidColorBrush BrushUnhover = new SolidColorBrush(UnhoverColour);
-            Button X = (Button)sender;
-            X.Background = BrushUnhover;
-        }
-
-        public string CreateSalt(int size)
-        {
-            var rng = new System.Security.Cryptography.RNGCryptoServiceProvider();
-            var buff = new byte[size];
-            rng.GetBytes(buff);
-            return Convert.ToBase64String(buff);
-        }
-        public string GenerateSHA256Hash(string input, string salt)
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes(input + salt);
-            System.Security.Cryptography.SHA256Managed sha256hashstring =
-                new System.Security.Cryptography.SHA256Managed();
-            byte[] hash = sha256hashstring.ComputeHash(bytes);
-
-            return Convert.ToBase64String(hash);
-        }
-
-        public static string ByteArrayToHexString(byte[] ba)
-        {
-            StringBuilder hex = new StringBuilder(ba.Length * 2);
-            foreach (byte b in ba)
-            {
-                hex.AppendFormat("{0:x2}", b);
-            }
-
-            return hex.ToString();
-        }
-
-        public static byte[] HexStringToByteArray(string hex)
-        {
-            int NumberChars = hex.Length;
-            byte[] bytes = new byte[NumberChars / 2];
-            for (int i = 0; i < NumberChars; i += 2)
-            {
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            }
-
-            return bytes;
-        }
-
-        bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public void Insert()
-        {
-            string query = "INSERT INTO CryptoUsers (EMAIL, USERNAME, HASH, SALT) VALUES('" + EmailUp + "', '" + UserUp + "', '" + hashedpassword + "', '" + salt + "')";
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.Prepare();
-                cmd.ExecuteNonQuery();
-                this.CloseConnection();
-            }
-
-            CurrentID = Convert.ToInt32(Select(ID).ElementAt((Select(EMAIL).IndexOf(EmailUp))));
-        }
-
-        //Select statement
-        public List<string> Select(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoUsers";
-
-            ID.Clear();
-            EMAIL.Clear();
-            USERNAME.Clear();
-            HASH.Clear();
-            SALT.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-                while (dataReader.Read())
-                {
-                    ID.Add(dataReader["ID"] + "");
-                    EMAIL.Add(dataReader["EMAIL"] + "");
-                    USERNAME.Add(dataReader["USERNAME"] + "");
-                    HASH.Add(dataReader["HASH"] + "");
-                    SALT.Add(dataReader["SALT"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-        public List<string> SelectMember(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoMembership WHERE ID='" + MainWindow.CurrentID + "'";
-
-            ID_M.Clear();
-            MEMBERSHIP.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    ID_M.Add(dataReader["ID"] + "");
-                    MEMBERSHIP.Add(dataReader["MEMBERSHIP"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-        public void InsertMember()
-        {
-            string query = "INSERT INTO CryptoMembership (ID, MEMBERSHIP) VALUES('" + CurrentID + "', '" + AccountSettings.FreeMembership + "')";
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.ExecuteNonQuery();
-                this.CloseConnection();
-            }
-        }
-
-        public void InsertElectricity()
-        {
-            string query = "INSERT INTO CryptoElectricity (ID, ELECTRICITY) VALUES('" + CurrentID + "', '" + AccountSettings.ElectricitiyRate + "')";
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.ExecuteNonQuery();
-                this.CloseConnection();
-            }
-        }
-
-        private Task InsertMiningSettings()
-        {
-            return Task.Run(() =>
-            {
-                string query = "INSERT INTO CryptoMiningSettings (ID, CUSTOMID, WALLET) VALUES('" + CurrentID + "', '" + SaveCustomID + "', '" + SaveWalletAddress + "')";
-
-                if (OpenConnection() == true)
-                {
-                    try
-                    {
-                        MySqlCommand cmd = new MySqlCommand(query, connection);
-                        cmd.ExecuteNonQuery();
-                        this.CloseConnection();
-
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            if (WalletCustomIDs[0] == "no data found")
-                            {
-                                WalletCustomIDs.Clear();
-                            }
-                            WalletCustomIDs.Add(SaveCustomID);
-                            AccountSettings.ComboBoxIDs.ItemsSource = WalletCustomIDs;
-                        });
-                    }
-                    catch (Exception)
-                    {
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            ProgressDialog.IsOpen = false;
-                            SaveWalletIDInfo.IsOpen = true;
-                        });
-
-                    }
-                }
-            });
-        }
-
-        private Task InsertWorker()
-        {
-            return Task.Run(() =>
-            {
-                string query = "INSERT INTO CryptoWorkers (ID, CUSTOMID, WALLETID, WORKER, POWER, POOL) VALUES('" + CurrentID + "', '" + strAddWorkerNameID + "', '" + strAddWorkerWalletID + "', '" + strAddWorkerName + "', '" + strAddWorkerElectricity + "', + '" + strAddWorkerPool + "')";
-
-                if (OpenConnection() == true)
-                {
-                    try
-                    {
-                        MySqlCommand cmd = new MySqlCommand(query, connection);
-                        cmd.ExecuteNonQuery();
-                        this.CloseConnection();
-
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            WorkerCustomList.Add(strAddWorkerNameID);
-                            WorkerComboBox.ItemsSource = WorkerCustomList;
-                            MiningRemoveComboBox.ItemsSource = WorkerCustomList;
-                        });
-                    }
-                    catch (Exception)
-                    {
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            ProgressDialog.IsOpen = false;
-                            AddWorkerInfo.IsOpen = true;
-                        });
-
-                    }
-                }
-            });
-        }
-
-        private Task DeleteWorker()
-        {
-            return Task.Run(() =>
-            {
-                string query = "DELETE FROM CryptoWorkers WHERE ID='" + CurrentID + "' AND CUSTOMID='" + strRemoveWorkerName + "'";
-
-                if (OpenConnection() == true)
-                {
-                    try
-                    {
-                        MySqlCommand cmd = new MySqlCommand(query, connection);
-                        cmd.ExecuteNonQuery();
-                        this.CloseConnection();
-
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            WorkerCustomList.Remove(strRemoveWorkerName);
-                            WorkerComboBox.ItemsSource = WorkerCustomList;
-                            MiningRemoveComboBox.ItemsSource = WorkerCustomList;
-
-                            //DeleteCustomWorkers();
-                            //for (int x = 0; x < SessionCustomCoins.Count; x++)
-                            //{
-                            //    string coin = SessionCustomCoins[x];
-                            //    string Currency = SessionCustomCoinsCurrency[x];
-                            //    InsertCustomCoins(coin, Currency);
-                            //}
-                            //CoinBox.Items.Clear();
-                            //SessionCustomCoins.Clear();
-                            //SessionCustomCoinsCurrency.Clear();
-                        });
-                    }
-                    catch (Exception)
-                    {
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            ProgressDialog.IsOpen = false;
-                            RemoveWorkerInfo.IsOpen = true;
-                        });
-
-                    }
-                }
-            });
-
-        }
-
-        public void DeleteMiningSettings()
-        {
-            string query = "DELETE FROM CryptoMiningSettings WHERE ID='" + CurrentID + "'AND CUSTOMID='" + RemoveCustomID + "'";
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                cmd.ExecuteNonQuery();
-                this.CloseConnection();
-            }
-        }
-
-        public List<string> SelectMiningSettings(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoMiningSettings WHERE ID='" + CurrentID + "'";
-
-            ID_MS.Clear();
-            CUSTOMID.Clear();
-            WALLET.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    ID_MS.Add(dataReader["ID"] + "");
-                    CUSTOMID.Add(dataReader["CUSTOMID"] + "");
-                    WALLET.Add(dataReader["WALLET"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-        public ObservableCollection<string> SelectMiningSettingsForUser(ObservableCollection<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoMiningSettings WHERE ID='" + CurrentID + "'";
-
-            WalletCustomIDs.Clear();
-            WalletCustomAddresses.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    WalletCustomIDs.Add(dataReader["CUSTOMID"] + "");
-                    WalletCustomAddresses.Add(dataReader["WALLET"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-
-        public ObservableCollection<string> SelectWorkerForUser(ObservableCollection<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoWorkers WHERE ID='" + CurrentID + "'";
-
-            WorkerCustomList.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    WorkerCustomList.Add(dataReader["CUSTOMID"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-        public List<string> SelectWorker(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoWorkers WHERE ID='" + CurrentID + "'";
-
-            CUSTOMWORKERID.Clear();
-            CUSTOMWALLETID.Clear();
-            WORKERNAME.Clear();
-            POWER.Clear();
-            POOL.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    CUSTOMWORKERID.Add(dataReader["CUSTOMID"] + "");
-                    CUSTOMWALLETID.Add(dataReader["WALLETID"] + "");
-                    WORKERNAME.Add(dataReader["WORKER"] + "");
-                    POWER.Add(dataReader["POWER"] + "");
-                    POOL.Add(dataReader["POOL"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-        public List<string> SelectElectricity(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoElectricity WHERE ID='" + CurrentID + "'";
-
-            AccountSettings.ID_ELEC.Clear();
-            AccountSettings.ELECTRICITYRATE.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    AccountSettings.ID_ELEC.Add(dataReader["ID"] + "");
-                    AccountSettings.ELECTRICITYRATE.Add(dataReader["ELECTRICITY"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-        public List<string> SelectCustomCoins(List<string> Ref)
-        {
-            string query = "SELECT * FROM CryptoCustomCoins WHERE ID='" + Convert.ToString(MainWindow.CurrentID) + "'";
-
-            ID_CC.Clear();
-            C_COIN.Clear();
-            C_CURRENCY.Clear();
-
-            if (this.OpenConnection() == true)
-            {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                {
-                    ID_CC.Add(dataReader["ID"] + "");
-                    C_COIN.Add(dataReader["COIN"] + "");
-                    C_CURRENCY.Add(dataReader["CURRENCY"] + "");
-                }
-
-                dataReader.Close();
-                this.CloseConnection();
-                return Ref;
-            }
-            else
-            {
-                return Ref;
-            }
-        }
-
-        private void dispatcherTimer2_Tick(object sender, EventArgs e)
-        {
-            ProgressDialog.IsOpen = false;
-            (sender as DispatcherTimer).Stop();
-        }
-
+        //All buttons that require progress dialog.
         private void btnLogin_Click(object sender, RoutedEventArgs e)
         {
             LoggingIn = true;
@@ -1797,6 +1801,8 @@ namespace CryptoPocket
             ProgressDialog.IsOpen = true;
         }
 
+
+        //When progress dialog loads, dependent on booleans declared earlier.
         private void ProgressDialog_Loaded(object sender, DialogOpenedEventArgs eventArgs)
         {
             //Signing Up Calculation Pt.1
@@ -1835,7 +1841,7 @@ namespace CryptoPocket
                 }
                 else
                 {
-                    dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
+                    dispatcherTimer.Tick += new EventHandler(LoadingTimer_Tick);
                     dispatcherTimer.Interval = new TimeSpan(0, 0, 5);
                     dispatcherTimer.Start();
 
@@ -1907,7 +1913,7 @@ namespace CryptoPocket
                 }
                 else
                 {
-                    dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
+                    dispatcherTimer.Tick += new EventHandler(LoadingTimer_Tick);
                     dispatcherTimer.Interval = new TimeSpan(0, 0, 5);
                     dispatcherTimer.Start();
 
@@ -1920,7 +1926,7 @@ namespace CryptoPocket
             else if (LoggedIn == true && SigningUp == false && LoggingIn == false && SavingWalletID == false
                 && RemovingWalletID == false && AddWorkerBool == false && RemoveWorkerBool == false)
             {
-                dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
+                dispatcherTimer.Tick += new EventHandler(LoadingTimer_Tick);
                 dispatcherTimer.Interval = new TimeSpan(0, 0, 2);
                 dispatcherTimer.Start();
 
@@ -1955,7 +1961,7 @@ namespace CryptoPocket
                     }
                     else
                     {
-                        dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
+                        dispatcherTimer.Tick += new EventHandler(LoadingTimer_Tick);
                         dispatcherTimer.Interval = new TimeSpan(0, 0, 2);
                         dispatcherTimer.Start();
 
@@ -1975,7 +1981,7 @@ namespace CryptoPocket
 
                 if (RemoveComboBoxIDs.Text.Length != 0 && LoggedIn == true)
                 {
-                    dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
+                    dispatcherTimer.Tick += new EventHandler(LoadingTimer_Tick);
                     dispatcherTimer.Interval = new TimeSpan(0, 0, 2);
                     dispatcherTimer.Start();
 
@@ -1993,13 +1999,15 @@ namespace CryptoPocket
                 }
             }
 
+            //Add Custom Worker | Pt.1
+
             else if (AddWorkerBool == true)
             {
                 AddWorkerBool = false;
 
                 if (LoggedIn == true && AddWorkerNameCustomID.Text.Length != 0 && AddWorkerPool.Text.Length != 0 && AddWorkerWalletCustomID.Text.Length != 0 && AddWorkerName.Text.Length != 0 && AddWorkerElectricity.Text.Length != 0)
                 {
-                    dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
+                    dispatcherTimer.Tick += new EventHandler(LoadingTimer_Tick);
                     dispatcherTimer.Interval = new TimeSpan(0, 0, 4);
                     dispatcherTimer.Start();
 
@@ -2025,13 +2033,15 @@ namespace CryptoPocket
                 }
             }
 
+            //Remove Custom Worker | Pt.1
+
             else if (RemoveWorkerBool == true)
             {
                 RemoveWorkerBool = false;
 
                 if (LoggedIn == true && MiningRemoveComboBox.Text.Length != 0)
                 {
-                    dispatcherTimer.Tick += new EventHandler(dispatcherTimer2_Tick);
+                    dispatcherTimer.Tick += new EventHandler(LoadingTimer_Tick);
                     dispatcherTimer.Interval = new TimeSpan(0, 0, 4);
                     dispatcherTimer.Start();
 
@@ -2351,6 +2361,8 @@ namespace CryptoPocket
             });
         }
 
+        //Async Logout Calculation | Pt.2
+
         async Task LogoutUserCalc()
         {
             await LogoutUserCalculation();
@@ -2410,6 +2422,8 @@ namespace CryptoPocket
             });
         }
 
+        //Async Add Wallet ID | Pt.2
+
         async Task InsertWalletID()
         {
             await InsertWalletIDCalculation();
@@ -2444,6 +2458,8 @@ namespace CryptoPocket
             });
         }
 
+        //Async Remove Wallet ID | Pt.2
+
         async Task DeleteWalletID()
         {
             await DeleteWalletIDCalculation();
@@ -2476,6 +2492,8 @@ namespace CryptoPocket
                 }
             });
         }
+
+        //Async Add Worker | Pt.2
 
         async Task AddWorkerTask()
         {
@@ -2512,6 +2530,8 @@ namespace CryptoPocket
             });
         }
 
+        //Async Remove Worker | Pt.2
+
         async Task RemoveWorkerTask()
         {
             await RemoveWorkerTaskCalculation();
@@ -2537,6 +2557,8 @@ namespace CryptoPocket
             });
         }
 
+
+        //Universal Server-Side Error MEssage.
         private Task ServeSideError(DialogHost Progress, DialogHost InfoBox, TextBlock Title, TextBlock Line1, TextBlock Line2)
         {
             return Task.Run(() =>
@@ -2550,41 +2572,37 @@ namespace CryptoPocket
 
         }
 
+        //Forcing "virtual" button click to simulate dialog openning.
         private void btnForceSignup_Click(object sender, RoutedEventArgs e)
         {
             ButtonAutomationPeer peer = new ButtonAutomationPeer(AccountSettings.SignupButton);
             IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
             invokeProv.Invoke();
         }
-
         private void btnForceLogin_Click(object sender, RoutedEventArgs e)
         {
             ButtonAutomationPeer peer = new ButtonAutomationPeer(AccountSettings.LoginEditButton);
             IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
             invokeProv.Invoke();
         }
-
         private void btnForceSaveWallet_Click(object sender, RoutedEventArgs e)
         {
             ButtonAutomationPeer peer = new ButtonAutomationPeer(AccountSettings.btnSaveWalletID);
             IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
             invokeProv.Invoke();
         }
-
         private void btnForceRemoveWallet_Click(object sender, RoutedEventArgs e)
         {
             ButtonAutomationPeer peer = new ButtonAutomationPeer(AccountSettings.btnRemoveWalletID);
             IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
             invokeProv.Invoke();
         }
-
         private void btnForceAddWorker_Click(object sender, RoutedEventArgs e)
         {
             ButtonAutomationPeer peer = new ButtonAutomationPeer(AddWorkerButton);
             IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
             invokeProv.Invoke();
         }
-
         private void btnForceRemoveWorker_Click(object sender, RoutedEventArgs e)
         {
             ButtonAutomationPeer peer = new ButtonAutomationPeer(RemoveWorkerButton);
@@ -2592,6 +2610,7 @@ namespace CryptoPocket
             invokeProv.Invoke();
         }
 
+        //Resetting all boxes when dialog boxes close.
         private void ResetInputs(object sender, DialogClosingEventArgs eventArgs)
         {
             LoginUsername.Text = "";
@@ -2620,6 +2639,7 @@ namespace CryptoPocket
             ComboEditWorkerName.Text = "";
         }
 
+        //Checking info buttons.
         private void btnInfo_Click(object sender, RoutedEventArgs e)
         {
             var Button = (Button)sender;
@@ -2659,6 +2679,7 @@ namespace CryptoPocket
             }
         }
 
+        //Checking worker buttons.
         private void btnWorker_Click(object sender, RoutedEventArgs e)
         {
             var Button = (Button)sender;
@@ -2682,16 +2703,8 @@ namespace CryptoPocket
             }
         }
 
-        private static bool IsTextAllowed(string text)
-        {
-            return !NumericalInput.IsMatch(text);
-        }
 
-        private void NumbersOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = !IsTextAllowed(e.Text);
-        }
-
+        //Functions for validating data for Add Worker.
         private void AddWorkerElectricity_LostFocus(object sender, RoutedEventArgs e)
         {
             AddWorkerElectricity.Text = EaseMethods.KeepOnlyNumbers(AddWorkerElectricity.Text);
@@ -2704,12 +2717,70 @@ namespace CryptoPocket
                 AddWorkerElectricity.Text = AddWorkerElectricity.Text + " Watts";
             }
         }
-
         private void AddWorkerElectricity_GotFocus(object sender, RoutedEventArgs e)
         {
             AddWorkerElectricity.Text = EaseMethods.KeepOnlyNumbers(AddWorkerElectricity.Text);
         }
+        private void WorkerComboBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (WorkerCustomList.Count == 0 || LoggedIn == false)
+            {
+                WorkerCustomList.Clear();
+                WorkerCustomList.Add("no data found");
+                WorkerComboBox.ItemsSource = WorkerCustomList;
+            }
+            else
+            {
+                WorkerComboBox.ItemsSource = WorkerCustomList;
+            }
+        }
+        private void AddWorkerWalletCustomID_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (WalletCustomIDs.Count == 0)
+            {
+                WalletCustomIDs.Add("no data found");
+            }
+        }
+        private void AddWorkerName_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (AddWorkerWalletCustomID.Text.Length != 0 && LoggedIn == true && AddWorkerPool.Text.Length != 0 && WalletSelected == false)
+            {
+                WalletSelected = true;
+                WorkerList.Clear();
+                strAddWorkerWalletID = AddWorkerWalletCustomID.Text;
+                int Index = SelectMiningSettingsForUser(WalletCustomIDs).IndexOf(strAddWorkerWalletID);
+                strAddWorkerWalletAddress = WalletCustomAddresses.ElementAt(Index);
+                strAddWorkerPool = AddWorkerPool.Text;
 
+                LookUpWalletAddress();
+
+                AddWorkerWalletCustomID.Text = strAddWorkerWalletID;
+            }
+            else if (WalletSelected == true && LoggedIn == true)
+            {
+                if (AddWorkerWalletCustomID.Text != strAddWorkerWalletID || AddWorkerPool.Text != strAddWorkerPool)
+                {
+                    WorkerList.Clear();
+                    strAddWorkerWalletID = AddWorkerWalletCustomID.Text;
+                    int Index = SelectMiningSettingsForUser(WalletCustomIDs).IndexOf(strAddWorkerWalletID);
+                    strAddWorkerWalletAddress = WalletCustomAddresses.ElementAt(Index);
+                    strAddWorkerPool = AddWorkerPool.Text;
+
+                    LookUpWalletAddress();
+
+                    AddWorkerWalletCustomID.Text = strAddWorkerWalletID;
+                }
+
+            }
+            else
+            {
+                WorkerList.Clear();
+                WorkerList.Add("no data found");
+                AddWorkerName.ItemsSource = WorkerList;
+            }
+        }
+
+        //Task to lookup the API Documentation.
         async Task LookUpWalletAddress()
         {
             await LookUpWalletAddressCalculation();
@@ -2815,67 +2886,6 @@ namespace CryptoPocket
                 });
 
             });
-        }
-
-        private void AddWorkerName_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (AddWorkerWalletCustomID.Text.Length != 0 && LoggedIn == true && AddWorkerPool.Text.Length != 0 && WalletSelected == false)
-            {
-                WalletSelected = true;
-                WorkerList.Clear();
-                strAddWorkerWalletID = AddWorkerWalletCustomID.Text;
-                int Index = SelectMiningSettingsForUser(WalletCustomIDs).IndexOf(strAddWorkerWalletID);
-                strAddWorkerWalletAddress = WalletCustomAddresses.ElementAt(Index);
-                strAddWorkerPool = AddWorkerPool.Text;
-
-                LookUpWalletAddress();
-
-                AddWorkerWalletCustomID.Text = strAddWorkerWalletID;
-            }
-            else if (WalletSelected == true && LoggedIn == true)
-            {
-                if (AddWorkerWalletCustomID.Text != strAddWorkerWalletID || AddWorkerPool.Text != strAddWorkerPool)
-                {
-                    WorkerList.Clear();
-                    strAddWorkerWalletID = AddWorkerWalletCustomID.Text;
-                    int Index = SelectMiningSettingsForUser(WalletCustomIDs).IndexOf(strAddWorkerWalletID);
-                    strAddWorkerWalletAddress = WalletCustomAddresses.ElementAt(Index);
-                    strAddWorkerPool = AddWorkerPool.Text;
-
-                    LookUpWalletAddress();
-
-                    AddWorkerWalletCustomID.Text = strAddWorkerWalletID;
-                }
-
-            }
-            else
-            {
-                WorkerList.Clear();
-                WorkerList.Add("no data found");
-                AddWorkerName.ItemsSource = WorkerList;
-            }
-        }
-
-        private void WorkerComboBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (WorkerCustomList.Count == 0 || LoggedIn == false)
-            {
-                WorkerCustomList.Clear();
-                WorkerCustomList.Add("no data found");
-                WorkerComboBox.ItemsSource = WorkerCustomList;
-            }
-            else
-            {
-                WorkerComboBox.ItemsSource = WorkerCustomList;
-            }
-        }
-
-        private void AddWorkerWalletCustomID_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (WalletCustomIDs.Count == 0)
-            {
-                WalletCustomIDs.Add("no data found");
-            }
         }
     }
 }

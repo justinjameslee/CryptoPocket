@@ -10,8 +10,7 @@ namespace CryptoPocket
 {
     public class EaseMethods
     {
-        public static string jsonString;
-
+        //Variety of Functions to Strip Text / Numbers / Symbols
         public static string KeepOnlyNumbers(string value)
         {
             var allowedChars = "01234567890";
@@ -25,7 +24,6 @@ namespace CryptoPocket
             }
 
         }
-
         public static string RemoveExtraText(string value)
         {
             var allowedChars = "01234567890.,-";
@@ -99,35 +97,12 @@ namespace CryptoPocket
                 return value;
             }
         }
-
         public static string RemoveAfterLetter(string Remove, string Letter)
         {
             MainWindow.TimeIndexRemove = Remove.LastIndexOf(Letter);
             if (MainWindow.TimeIndexRemove > 0) { Remove = Remove.Substring(0, MainWindow.TimeIndexRemove); }
             return Remove;
         }
-
-        public static string API(string url)
-        {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.AutomaticDecompression = DecompressionMethods.GZip;
-
-            try
-            {
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                using (Stream stream = response.GetResponseStream())
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    jsonString = reader.ReadToEnd();
-                    return jsonString;
-                }
-            }
-            catch (Exception)
-            {
-                return "";
-            }
-        }
-
         public string getBetween(string strSource, string strStart, string strEnd)
         {
             try

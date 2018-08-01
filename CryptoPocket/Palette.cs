@@ -2,9 +2,8 @@
 
 namespace CryptoPocket
 {
-    /// <summary>
-    /// Provides full information about a palette.
-    /// </summary>
+    
+    //Allows Theme Switching
     public class Palette
     {
         public Palette(Swatch primarySwatch, Swatch accentSwatch, int primaryLightHueIndex, int primaryMidHueIndex, int primaryDarkHueIndex, int accentHueIndex)
