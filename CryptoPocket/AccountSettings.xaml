@@ -16,7 +16,13 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    
+    <!-- AccountSettings Grid -->
+    
     <Grid>
+        
+        <!--#region Guest Summary -->
+        
         <materialDesign:Card Width="400" Height="155" Margin="10,10,10,10" HorizontalAlignment="Left" Padding="15">
             <Grid>
                 <StackPanel>
@@ -61,6 +67,11 @@
                 </StackPanel>
             </Grid>
         </materialDesign:Card>
+        
+        <!--#endregion -->
+        
+        <!--#region Settings Card -->
+        
         <materialDesign:Card Width="530" Height="530" Margin="10,10,10,10" HorizontalAlignment="Right" Padding="15">
             <Grid Margin="0,0,0,0" HorizontalAlignment="Right">
                 <StackPanel Orientation="Vertical" Margin="0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="480">
@@ -208,6 +219,11 @@
             </Grid>
 
         </materialDesign:Card>
+        
+        <!--#endregion -->
+        
+        <!--#region Crypto Exchance API Import Card -->
+        
         <materialDesign:Card Width="400" Height="380" Margin="10,10,10,10" HorizontalAlignment="Left" Padding="0" VerticalAlignment="Bottom">
             <Grid>
                 <StackPanel>
@@ -259,5 +275,8 @@
                 </StackPanel>
             </Grid>
         </materialDesign:Card>
+        
+        <!--#endregion -->
+        
     </Grid>
 </UserControl>
