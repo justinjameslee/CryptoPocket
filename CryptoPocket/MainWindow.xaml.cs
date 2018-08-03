@@ -249,6 +249,8 @@ namespace CryptoPocket
         {
             CreateMustFiles();
 
+            //This alogrihim ensures that this process only occurs once to reduce load on the program.
+            //It grabs a list of all coins from an online API marketplace and puts it into a list format allowing easy access.
             if (new FileInfo(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt").Length == 0)
             {
                 string url = @"https://api.coinmarketcap.com/v2/listings/";
@@ -288,6 +290,8 @@ namespace CryptoPocket
                 CoinComboBox.ItemsSource = SepCoinN;
             }
 
+            
+            //Checks to see if it's a returning user.
             if (new FileInfo(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt").Length == 0)
             {
                 DefaultLogin = true;
@@ -463,7 +467,8 @@ namespace CryptoPocket
         //Checking and Creating Required Files
         public static void CreateMustFiles()
         {
-            if (!File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt") || !File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt") || !File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoinsID.txt"))
+            if (!File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session\Username.txt") || !File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoins.txt") 
+                || !File.Exists(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins\ActiveCoinsID.txt"))
             {
                 Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Session");
                 Directory.CreateDirectory(@"C:\Users\" + Environment.UserName + @"\Documents\CryptoPocket\Coins");
