@@ -578,16 +578,12 @@ namespace CryptoPocket
 
             try
             {
-                // Getting the currently selected ListBoxItem
-                // Note that the ListBox must have
-                // IsSynchronizedWithCurrentItem set to True for this to work
+                //Getting the currently selected ListBoxItem
                 ListBoxItem CoinBoxItem =
                     (ListBoxItem)(CoinBox.ItemContainerGenerator.ContainerFromItem(CoinBox.Items.CurrentItem));
 
-                // Getting the ContentPresenter of myListBoxItem
+                //Getting the ContentPresenter of ListBoxItem
                 ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(CoinBoxItem);
-
-                // Finding textBlock from the DataTemplate that is set on that ContentPresenter
                 DataTemplate myDataTemplate = myContentPresenter.ContentTemplate;
 
                 TextBlock tempPortfolioCoin = (TextBlock)myDataTemplate.FindName("PortfolioCoin", myContentPresenter);
@@ -596,8 +592,8 @@ namespace CryptoPocket
                 TextBlock temptxt7Days = (TextBlock)myDataTemplate.FindName("txt7Days", myContentPresenter);
                 TextBlock temptxt24HoursV = (TextBlock)myDataTemplate.FindName("txt24HoursV", myContentPresenter);
                 TextBlock temptxt7DaysV = (TextBlock)myDataTemplate.FindName("txt7DaysV", myContentPresenter);
-                MaterialDesignThemes.Wpf.PackIcon tempIcon24Hours = (MaterialDesignThemes.Wpf.PackIcon)myDataTemplate.FindName("Icon24Hours", myContentPresenter);
-                MaterialDesignThemes.Wpf.PackIcon tempIcon7Days = (MaterialDesignThemes.Wpf.PackIcon)myDataTemplate.FindName("Icon7Days", myContentPresenter);
+                PackIcon tempIcon24Hours = (PackIcon)myDataTemplate.FindName("Icon24Hours", myContentPresenter);
+                PackIcon tempIcon7Days = (PackIcon)myDataTemplate.FindName("Icon7Days", myContentPresenter);
                 TextBlock tempToggleCoinText = (TextBlock)myDataTemplate.FindName("ToggleCoinText", myContentPresenter);
 
                 if (CoinToggled == false)
@@ -643,16 +639,14 @@ namespace CryptoPocket
 
             try
             {
-                // Getting the currently selected ListBoxItem
-                // Note that the ListBox must have
-                // IsSynchronizedWithCurrentItem set to True for this to work
+                //Getting the currently selected ListBoxItem
                 ListBoxItem WorkerBoxItem =
                     (ListBoxItem)(WorkerBox.ItemContainerGenerator.ContainerFromItem(WorkerBox.Items.CurrentItem));
 
-                // Getting the ContentPresenter of myListBoxItem
+                //Getting the ContentPresenter of ListBoxItem
                 ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(WorkerBoxItem);
 
-                // Finding textBlock from the DataTemplate that is set on that ContentPresenter
+                //Finding textBlock from the DataTemplate that is set on that ContentPresenter
                 DataTemplate myDataTemplate = myContentPresenter.ContentTemplate;
 
                 TextBlock tempProfitabilityDay = (TextBlock)myDataTemplate.FindName("ProfitabilityDay", myContentPresenter);
@@ -1105,6 +1099,9 @@ namespace CryptoPocket
                 this.CloseConnection();
             }
         }
+
+        //Planned implementation of future functionality feature.
+        //That is why the code is commented below.
         private Task DeleteWorker()
         {
             return Task.Run(() =>
@@ -1240,6 +1237,15 @@ namespace CryptoPocket
         }
 
         //Calculation of custom coin for summary box.
+        //Initially checks to see if it a new calculation or a exisiting coin.
+        //Once determined the correct variables are assigned
+        //A HTTP WebRequest returns what the website would display.
+        //It is then read as a single long string.
+        //Within the string it is converted into a list by using repeated string values such as ','.
+        //Wihin each list entry the irrelevant data is filtered out.
+        //All relevant data is added to a list.
+        //It is then sorted and filtered again based on their individual values.
+        //Finally it is added to the CoinBox as a ListBoxItem.
         public void CustomCoinCalculation()
         {
             try
@@ -1555,11 +1561,12 @@ namespace CryptoPocket
             }
             catch (Exception)
             {
-                CoinComboBox.Text = "";
-                ComboCoinPercentage.Text = "";
+                WorkerComboBox.Text = "";
                 Incorrect = true;
             }
         }
+
+        //Based on the data determined in the function above data is determined from a text file.
         public void GETWorkerInfoNH()
         {
             UpTimeBeforeCalc = UpTimeBeforeCalc * 60;
@@ -1594,6 +1601,9 @@ namespace CryptoPocket
             GETWorkerNHProfit();
 
         }
+
+        //Profitability is determined using the online API Website based on algorithim and hashrate.
+        //The data is grabbed by sorting it into lits and filtering irrelevant data.
         public void GETWorkerNHProfit()
         {
 
@@ -1637,6 +1647,8 @@ namespace CryptoPocket
                 }
             }
         }
+
+        //Using the data from above it is refined into readable information.
         public void GETWorkerCalcProfit()
         {
             NHCalcProfitRate = RealProfit[Convert.ToInt32(SepCustomWorkerData[5])];
@@ -1657,6 +1669,8 @@ namespace CryptoPocket
                 sessProfitability = "BTC/DAY: " + sessProfitability;
             }
         }
+
+        //Function to convert outputted time into readable information.
         public void WorkerTimeCalculation()
         {
             if (UpTimeBeforeCalc == 0)
@@ -1736,6 +1750,7 @@ namespace CryptoPocket
 
 
         //All buttons that require progress dialog.
+        //Settings booleans based on the function.
         private void btnLogin_Click(object sender, RoutedEventArgs e)
         {
             LoggingIn = true;
@@ -1808,6 +1823,10 @@ namespace CryptoPocket
 
 
         //When progress dialog loads, dependent on booleans declared earlier.
+        //The whole process checks the booleans declared when buttons were clicked.
+        //With multiple IF statements ensuring that the correct path is taken.
+        //Once in the IF statement the variables inputted are either set to variables or validated.
+        //If an error is expected to occur show the INFO dialoghost box.
         private void ProgressDialog_Loaded(object sender, DialogOpenedEventArgs eventArgs)
         {
             //Signing Up Calculation Pt.1
@@ -2063,6 +2082,11 @@ namespace CryptoPocket
 
         //Async | Signing Up Calculation Pt.2
 
+
+        //ASYNC task that occurs alongside the loading icon allowing a smooth progress.
+        //If any errors are expected to occur stop the timer. and present an error dialoghost box.
+        //If all validation has already occured, then proceed to attempt the MySQL Connection for Inserting/Deleting Data.
+        //Then proceed to reflect these changes on the program, updating textblocks, variables and updating combobox itemsources.
         async Task InsertNewUser()
         {
             await InsertNewUserCalculation();

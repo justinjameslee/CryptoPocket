@@ -131,6 +131,7 @@ namespace CryptoPocket
         }
 
         //Settings for BOOTING UP.
+        //Saving the file to run on startup.
         private void BootChecked(object sender, RoutedEventArgs e)
         {
             if (BootUp == false)
@@ -162,9 +163,7 @@ namespace CryptoPocket
             }
             catch (Exception)
             {
-                DialogHost.CloseDialogCommand.Execute(null, null);
                 mw.ServerError.IsOpen = true;
-
                 return false;
             }
         }
@@ -184,25 +183,17 @@ namespace CryptoPocket
             }
         }
 
-        //Update statement
+        //Update Electricity
         public void UpdateElectricity()
         {
             string query = "UPDATE CryptoElectricity SET ELECTRICITY='" + ElectricitiyRate + "' WHERE ID='" + Convert.ToString(MainWindow.CurrentID) + "'";
-
-            //Open connection
+            
             if (this.OpenConnection() == true)
             {
-                //create mysql command
                 MySqlCommand cmd = new MySqlCommand();
-                //Assign the query using CommandText
                 cmd.CommandText = query;
-                //Assign the connection using Connection
                 cmd.Connection = connection;
-
-                //Execute query
                 cmd.ExecuteNonQuery();
-
-                //close connection
                 this.CloseConnection();
             }
         }
@@ -222,6 +213,7 @@ namespace CryptoPocket
         }
 
         //Login Function
+        //Checks if a previous user was detected.
         private void EditUser_Click(object sender, RoutedEventArgs e)
         {
             if (MainWindow.LoggedIn == false)
@@ -251,6 +243,7 @@ namespace CryptoPocket
         }
 
         //Saving Electricity Value
+        //Ensuring it is number and not above 1.0
         private void btnElectricityRate_LostFocus(object sender, RoutedEventArgs e)
         {
             try
